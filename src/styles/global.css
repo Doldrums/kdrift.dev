@@ -110,11 +110,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;border-bottom:1p
 .metric-note{font-family:var(--mono);font-size:9px;color:var(--text4);line-height:1.5}
 
 /* ── TERMINAL ───────────────────────────────────────────── */
-.hero-term{background:var(--bg1);font-family:var(--mono);font-size:13px;line-height:1.75;display:flex;flex-direction:column;min-height:0}
+.hero-term{background:var(--bg1);font-family:var(--mono);font-size:13px;line-height:1.75;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
 .term-topbar{height:36px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:6px}
 .tdot{width:8px;height:8px;border-radius:50%}
 .td1{background:#ff5f56}.td2{background:#ffbd2e}.td3{background:#27c93f}
-.term-body{padding:20px 24px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.term-body{padding:20px 24px;flex:1;display:flex;flex-direction:column;justify-content:center;overflow-x:auto}
 .tl{display:flex;line-height:1.8}
 .t-p{color:#22c55e;margin-right:8px;flex-shrink:0}
 .t-c{color:#e2e2e2}
@@ -164,9 +164,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;border-bottom:1p
 .diff-wrap{border-bottom:1px solid var(--border)}
 .diff-inner{max-width:1100px;margin:0 auto;padding:40px 24px}
 .diff-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.06em;margin-bottom:16px;text-transform:uppercase}
-.diff-box{background:var(--bg1);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;line-height:1.7;overflow:hidden}
+.diff-box{background:var(--bg1);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto}
 .diff-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
-.diff-fname{color:var(--text3);font-size:11px}
+.diff-fname{color:var(--text3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .diff-info{color:var(--text4);font-size:10px;letter-spacing:0.04em}
 .diff-body{padding:4px 0}
 .dl{display:flex;padding:1px 16px}
@@ -229,6 +229,23 @@ tr:hover td{background:var(--bg2)}
 .aud-list li:last-child{border-bottom:none}
 .aud-list li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0;margin-top:1px}
 code{font-family:var(--mono);font-size:0.9em;color:var(--text2);background:var(--bg3);padding:1px 5px;border:1px solid var(--border)}
+
+/* ── PROBLEM LAYOUT ─────────────────────────────────────── */
+.problem-body{display:grid;grid-template-columns:1fr 340px;gap:48px;padding:40px 0;border-bottom:1px solid var(--border)}
+.problem-text p{font-size:14px;color:var(--text2);line-height:1.75;font-weight:300;margin-bottom:20px}
+.problem-text p strong{color:var(--text);font-weight:500}
+.problem-aside{padding:0}
+.pa-quote{font-size:13px;color:var(--text3);line-height:1.7;border-left:1px solid var(--border3);padding-left:16px;margin-bottom:20px;font-style:italic}
+.pa-meta{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.05em;line-height:1.9;text-transform:uppercase}
+
+/* ── CHANGE TYPES ───────────────────────────────────────── */
+.change-types{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
+.ct{padding:32px 28px;border-right:1px solid var(--border);transition:background 0.2s}
+.ct:last-child{border-right:none}
+.ct:hover{background:var(--bg2)}
+.ct-n{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
+.ct-name{font-size:16px;font-weight:500;letter-spacing:-0.02em;margin-bottom:10px}
+.ct-desc{font-size:13px;color:var(--text3);line-height:1.6;font-weight:300}
 
 /* ── AGENT LOOP (fancy) ─────────────────────────────────── */
 .al-wrap{position:relative;padding:40px 0 32px}
@@ -475,6 +492,11 @@ footer{max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;align-items
   .trusted-logo{min-width:100px;padding:0 12px;flex:1 1 33%}
   .trusted-logo:nth-child(3n){border-right:none}
   .trusted-logo:nth-child(n+4){border-top:1px solid var(--border)}
+  .problem-body{grid-template-columns:1fr;gap:0}
+  .problem-aside{padding-top:24px;border-top:1px solid var(--border)}
+  .change-types{grid-template-columns:1fr}
+  .ct{border-right:none;border-bottom:1px solid var(--border)}
+  .ct:last-child{border-bottom:none}
   .section-head{grid-template-columns:1fr;gap:12px;padding:32px 16px 24px}
   .section-inner{padding:0 16px}
   .sh-label{padding-top:0}
@@ -489,8 +511,12 @@ footer{max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;align-items
   .metric{border-bottom:1px solid var(--border)}
   .metric:nth-child(odd){border-right:1px solid var(--border)}
   .metric:nth-child(even){border-right:none}
+  .hero-term{font-size:11px}
+  .term-body{padding:16px}
   .diff-inner{padding:24px 16px}
   .diff-head{flex-direction:column;gap:4px}
+  .diff-box{font-size:10px}
+  .dl{padding:1px 10px}
   .table-wrap{padding:24px 16px}
   .table-meta{flex-direction:column;gap:4px;align-items:flex-start}
   table{font-size:11px}
@@ -520,4 +546,13 @@ footer{max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;align-items
   .trusted-logo{flex:1 1 50%}
   .trusted-logo:nth-child(3n){border-right:1px solid var(--border)}
   .trusted-logo:nth-child(2n){border-right:none}
+  .al-stats{grid-template-columns:1fr}
+  .al-stat{border-right:none !important}
+  .hero-metrics{grid-template-columns:1fr}
+  .hm{border-right:none !important}
+  .metrics-grid,.metrics-grid.cols-3,.metrics-grid.cols-5,.metrics-grid.cols-6{grid-template-columns:1fr}
+  .metric{border-right:none !important}
+  table{font-size:10px}
+  th,td{padding:6px 0}
+  td:not(:first-child),th:not(:first-child){padding-right:8px}
 }
