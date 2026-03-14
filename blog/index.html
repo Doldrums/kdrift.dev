@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — kdrift</title>
+<meta name="description" content="Deep dives into kernel evolution, driver maintenance, and the research behind KDRIFT.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* PAGE */
+.page{min-height:100vh}
+
+/* PAGE HEADER */
+.page-header{border-bottom:1px solid var(--border);padding-top:48px}
+.page-header-inner{max-width:1100px;margin:0 auto;padding:64px 24px 48px}
+.hero-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:8px;animation:fadeup 0.45s ease forwards;opacity:0}
+.hero-label::before{content:'';width:20px;height:1px;background:var(--border3)}
+.page-header h1{font-size:clamp(30px,4.5vw,52px);font-weight:600;line-height:1.1;letter-spacing:-0.04em;margin-bottom:20px;max-width:700px;animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+.page-header p{font-size:15px;color:var(--text2);line-height:1.7;max-width:600px;font-weight:300;animation:fadeup 0.45s 0.12s ease forwards;opacity:0}
+
+/* SECTION */
+.section{border-top:1px solid var(--border)}
+.section-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.section-head{display:grid;grid-template-columns:200px 1fr;gap:48px;padding:48px 0 40px;border-bottom:1px solid var(--border)}
+.sh-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;padding-top:4px}
+.sh-title{font-size:clamp(22px,3vw,30px);font-weight:600;letter-spacing:-0.03em;line-height:1.15}
+.sh-sub{margin-top:12px;font-size:14px;color:var(--text2);line-height:1.65;max-width:560px;font-weight:300}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+.metric{background:var(--bg);padding:28px 28px;transition:background 0.2s}
+.metric:hover{background:var(--bg2)}
+.metric-n{font-family:var(--mono);font-size:28px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+
+/* BLOG GRID */
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+.blog-post{display:flex;flex-direction:column;padding:32px 28px;background:var(--bg);text-decoration:none;transition:background 0.2s;border:none;cursor:pointer}
+.blog-post:hover{background:var(--bg2)}
+.bp-subscribe{background:var(--bg1)}
+.bp-subscribe:hover{background:var(--bg2)}
+.bp-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bp-tag{font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--border2);padding:3px 7px}
+.bp-date{font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:0.06em}
+.bp-title{font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1.35;margin-bottom:12px}
+.bp-desc{font-size:12px;color:var(--text3);line-height:1.65;font-weight:300;flex:1}
+.bp-read{font-family:var(--mono);font-size:11px;color:var(--text4);margin-top:20px;transition:color 0.15s;letter-spacing:0.04em}
+.blog-post:hover .bp-read{color:var(--text2)}
+
+/* SUBSCRIBE CARD */
+.sub-title{font-size:16px;font-weight:500;letter-spacing:-0.02em;margin-bottom:8px}
+.sub-desc{font-size:12px;color:var(--text3);line-height:1.65;font-weight:300;margin-bottom:20px}
+.cf-input{background:var(--bg2);border:1px solid var(--border2);padding:10px 14px;font-family:var(--sans);font-size:13px;color:var(--text);width:100%;outline:none;transition:border-color 0.15s;-webkit-appearance:none;appearance:none;border-radius:0;margin-bottom:10px}
+.cf-input:focus{border-color:var(--border3)}
+.cf-input::placeholder{color:var(--text4)}
+.cf-submit{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);border:none;padding:10px 20px;cursor:pointer;letter-spacing:0.02em;transition:background 0.15s;text-align:left;width:fit-content}
+.cf-submit:hover{background:#ccc}
+
+/* ANIMATIONS */
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* MOBILE */
+@media(max-width:768px){
+  .page-header-inner{padding:48px 16px 36px}
+  .section-head{grid-template-columns:1fr;gap:12px;padding:32px 0 24px}
+  .section-inner{padding:0 16px}
+  .sh-label{padding-top:0}
+  .blog-grid{grid-template-columns:1fr}
+  .metrics-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="hero-label">Blog</div>
+    <h1>From the team</h1>
+    <p>Deep dives into kernel evolution, driver maintenance, and the research behind KDRIFT.</p>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="section">
+  <div class="section-inner">
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-n">6</div>
+        <div class="metric-l">Articles published</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Monthly</div>
+        <div class="metric-l">Cadence</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Open</div>
+        <div class="metric-l">All content free</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOG POSTS -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">Articles</div>
+      <div>
+        <div class="sh-title">Latest writing</div>
+        <div class="sh-sub">Architecture decisions, research findings, and engineering lessons from building KDRIFT.</div>
+      </div>
+    </div>
+    <div class="blog-grid">
+
+      <a href="/blog/staged-validation.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Architecture</span>
+          <span class="bp-date">Mar 14, 2026</span>
+        </div>
+        <div class="bp-title">Why Compiler Errors Are Not Enough: The Case for Staged Validation</div>
+        <div class="bp-desc">A patch that compiles is not a patch that works. We walk through the four-stage validation pipeline and why each stage catches bugs the previous one missed.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <a href="/blog/semantic-realignment.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Research</span>
+          <span class="bp-date">Mar 7, 2026</span>
+        </div>
+        <div class="bp-title">Semantic Realignment: The Class of Kernel Changes That Silently Break Drivers</div>
+        <div class="bp-desc">Some kernel changes don't touch function signatures at all. The compiler stays quiet. The driver loads. Then something goes wrong at runtime.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <a href="/blog/building-driftbench.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Benchmark</span>
+          <span class="bp-date">Feb 28, 2026</span>
+        </div>
+        <div class="bp-title">Building DRIFTBENCH: Turning Kernel Git History Into a Reproducible Evaluation Corpus</div>
+        <div class="bp-desc">Evaluating kernel migration tools requires real cases, not synthetic ones. How we mined git history to build a deterministic benchmark.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <a href="/blog/lpa-vs-gma.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Engineering</span>
+          <span class="bp-date">Feb 21, 2026</span>
+        </div>
+        <div class="bp-title">LPA vs GMA: When to Use a Fast-Path Agent and When to Escalate</div>
+        <div class="bp-desc">Not all kernel API changes are equal. KDRIFT uses two agents optimized for different complexity levels — and the escalation policy between them.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <a href="/blog/kern-models.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Research</span>
+          <span class="bp-date">Feb 14, 2026</span>
+        </div>
+        <div class="bp-title">KERN Models: Teaching LLMs Why Kernel APIs Change</div>
+        <div class="bp-desc">Frontier models are good at kernel migration. But they're expensive and slow. KERN models are domain-specific, fine-tuned on kernel evolution trajectories.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <a href="/blog/cost-of-delay.html" class="blog-post">
+        <div class="bp-meta">
+          <span class="bp-tag">Business</span>
+          <span class="bp-date">Feb 7, 2026</span>
+        </div>
+        <div class="bp-title">The Cost of Delayed Kernel Upgrades</div>
+        <div class="bp-desc">Every month your kernel lags behind upstream, your CVE exposure window grows. The economics of kernel migration and why automation changes the equation.</div>
+        <div class="bp-read">Read article &rarr;</div>
+      </a>
+
+      <div class="blog-post bp-subscribe">
+        <div class="bp-meta">
+          <span class="bp-tag">Subscribe</span>
+        </div>
+        <div class="sub-title">Stay updated</div>
+        <div class="sub-desc">Get new posts delivered to your inbox. No spam, no marketing — just kernel engineering content.</div>
+        <input type="email" class="cf-input" placeholder="you@company.com">
+        <button class="cf-submit">Subscribe &rarr;</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

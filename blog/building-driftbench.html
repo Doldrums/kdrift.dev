@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building DRIFTBENCH — kdrift blog</title>
+<meta name="description" content="How we turned kernel git history into a reproducible evaluation corpus for kernel driver migration tools.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.page{min-height:100vh}
+
+/* ARTICLE */
+.article{max-width:720px;margin:0 auto;padding:120px 24px 80px}
+.article-meta{font-family:var(--mono);font-size:11px;color:var(--text4);letter-spacing:0.05em;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+.article-meta span{display:inline-flex;align-items:center;gap:6px}
+.article h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:24px}
+.article h2{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-top:48px;margin-bottom:16px;padding-top:24px;border-top:1px solid var(--border)}
+.article h3{font-size:16px;font-weight:500;letter-spacing:-0.01em;margin-top:32px;margin-bottom:12px}
+.article p{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:20px}
+.article p strong{color:var(--text);font-weight:500}
+.article ul,.article ol{margin-bottom:20px;padding-left:0;list-style:none}
+.article li{font-size:14px;color:var(--text2);line-height:1.7;font-weight:300;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.article li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0}
+.article blockquote{border-left:2px solid var(--border3);padding:16px 20px;margin:24px 0;background:var(--bg2)}
+.article blockquote p{font-size:14px;color:var(--text3);margin-bottom:0;font-style:italic}
+.article pre{background:var(--bg1);border:1px solid var(--border2);padding:20px 24px;margin:24px 0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text2)}
+.article .aside{font-family:var(--mono);font-size:11px;color:var(--text4);border-left:1px solid var(--border2);padding-left:12px;margin:24px 0;line-height:1.7}
+.article .aside a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border3);transition:color 0.15s}
+.article .aside a:hover{color:var(--text2)}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:24px 0}
+.metrics-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.metric{background:var(--bg);padding:24px 20px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-n.green{color:var(--green)}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+.metric-note{font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:4px;line-height:1.5}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+.article-nav{display:flex;gap:12px;margin-top:48px;flex-wrap:wrap}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.article h1{animation:fadeup 0.45s ease forwards;opacity:0}
+.article-meta{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+
+@media(max-width:768px){
+  .article{padding:80px 16px 60px}
+  .metrics-grid,.metrics-grid.cols-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .metrics-grid,.metrics-grid.cols-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<div class="article">
+
+  <div class="article-meta">
+    <span>Benchmark</span>
+    <span>Feb 28, 2026</span>
+    <span>12 min read</span>
+  </div>
+
+  <h1>Building DRIFTBENCH: Turning Kernel Git History Into a Reproducible Evaluation Corpus</h1>
+
+  <p>Evaluating kernel migration tools requires real cases, not synthetic ones. You cannot assess whether a system handles the complexity of kernel API evolution by testing it on contrived examples. The edge cases that matter — the ones that break real drivers in production — emerge from the actual history of kernel development, with all its messiness, implicit conventions, and cross-subsystem dependencies.</p>
+
+  <p>DRIFTBENCH is our answer to this problem. It is a <strong>deterministic, reproducible evaluation corpus</strong> mined from the Linux kernel's git history. Each case represents a real API migration: a kernel change that modified an internal API, paired with the corresponding driver adaptations that maintainers made in response. The dataset includes the before state, the kernel change, the golden-reference after state, and a validation harness that verifies any candidate patch through KDRIFT's four-stage pipeline.</p>
+
+  <p>This post describes how we built it, the design decisions that make it reproducible, and why existing benchmarks were insufficient for our needs.</p>
+
+  <h2>The Problem with Existing Benchmarks</h2>
+
+  <p>SWE-bench and its variants have become the standard evaluation for code generation and automated program repair. They test a model's ability to resolve GitHub issues across popular Python repositories. This is valuable work, but it does not transfer to kernel code for several fundamental reasons:</p>
+
+  <ul>
+    <li><strong>Build system complexity:</strong> Kernel code requires Kconfig, Kbuild, cross-compilation toolchains, and architecture-specific configuration. A "compile" check is not just running gcc — it is configuring a kernel, resolving hundreds of Kconfig dependencies, and building within the kernel's make infrastructure.</li>
+    <li><strong>Hardware dependencies:</strong> Many driver changes are only testable with specific hardware or accurate hardware emulation. DRIFTBENCH cases are selected to be testable in QEMU with appropriate machine types.</li>
+    <li><strong>Cross-subsystem interactions:</strong> A single API change can require coordinated modifications across multiple drivers in different subsystems. SWE-bench cases are typically self-contained within a single repository.</li>
+    <li><strong>Strict coding style:</strong> The kernel has checkpatch.pl and a rigid coding style that rejects patches with whitespace errors, incorrect comment formatting, or non-standard macro usage. Generated patches must conform to these standards.</li>
+    <li><strong>Validation depth:</strong> In Python projects, "does the test pass?" is a reasonable proxy for correctness. In kernel code, "does it compile?" is the minimum bar, and real validation requires static analysis, boot testing, and runtime verification.</li>
+  </ul>
+
+  <p>We needed a benchmark that was native to the kernel development workflow, not adapted from a different domain. DRIFTBENCH is designed from the ground up to reflect how kernel migration actually works.</p>
+
+  <h2>Mining Kernel Commits</h2>
+
+  <p>The Linux kernel's git history is the richest source of API migration examples in existence. Every time a kernel developer changes an internal API, they are expected to update all in-tree users of that API in the same commit or patch series. This convention — <strong>"if you break it, you fix it"</strong> — means that the kernel's git history contains thousands of paired examples: an API change and its corresponding driver adaptations.</p>
+
+  <p>We identify migration-relevant commits through a multi-step filter:</p>
+
+  <ul>
+    <li><strong>Path filter:</strong> The commit must touch both header files in include/linux/ (or include/net/, include/sound/, etc.) and driver source files in drivers/. This identifies commits where an API definition changed and driver call sites were updated.</li>
+    <li><strong>Diff structure:</strong> The changes to include/ files must represent API modifications (function signature changes, struct reorganization, macro redefinition), not just documentation or comment updates.</li>
+    <li><strong>Driver scope:</strong> The commit must update at least 2 drivers. Single-driver changes are often driver-specific bug fixes rather than API migrations.</li>
+    <li><strong>Complexity filter:</strong> The driver-side changes must involve more than simple find-and-replace. We filter out trivial renames and argument reorderings that can be handled by Coccinelle scripts, focusing on cases that require semantic understanding.</li>
+  </ul>
+
+  <p>Applying these filters to kernel versions v5.10 through v6.10 yielded approximately 2,400 candidate commits. Manual review reduced this to 340 high-quality migration examples. From these, we selected 71 cases for DRIFTBENCH based on diversity of change type, subsystem coverage, and testability in QEMU.</p>
+
+  <h2>Case Extraction Pipeline</h2>
+
+  <p>For each selected commit, we extract a self-contained migration case. The extraction pipeline produces:</p>
+
+  <ul>
+    <li><strong>Before state:</strong> The driver source code at the commit immediately preceding the migration. This is the "input" to the migration tool — the code that needs to be updated.</li>
+    <li><strong>API change specification:</strong> The diff to the header files, extracted from the kernel commit. This defines what changed in the API.</li>
+    <li><strong>Golden patch:</strong> The diff applied to the driver in the original commit. This is the reference solution — the adaptation that the kernel maintainer actually made.</li>
+    <li><strong>After state:</strong> The driver source code after applying the golden patch. Used for AST similarity comparison.</li>
+    <li><strong>Change classification:</strong> Manual annotation of the change type according to the 9-class taxonomy (signature change, return type change, deprecation, struct reshape, lifecycle ordering, concurrency, error handling, security, cross-subsystem).</li>
+    <li><strong>Kernel configuration:</strong> A minimal defconfig that enables the target driver and its dependencies, suitable for QEMU boot testing.</li>
+  </ul>
+
+  <p>The extraction is deterministic: given a kernel commit hash, the pipeline always produces the same case. We pin exact kernel versions using git tags, not branch heads, ensuring that DRIFTBENCH results are reproducible across time.</p>
+
+  <pre># Extract a case from a kernel commit
+driftbench extract --commit abc123def \
+  --driver drivers/gpu/drm/example/example_drv.c \
+  --kernel-version v6.4 \
+  --output cases/case_047/
+
+# Produces:
+# cases/case_047/before/       — driver source at v6.3
+# cases/case_047/api_change/   — header diffs
+# cases/case_047/golden/       — reference patch
+# cases/case_047/config         — kernel defconfig
+# cases/case_047/metadata.json — classification, subsystem, etc.</pre>
+
+  <h2>Stratified Splits</h2>
+
+  <p>The 71 cases are divided into <strong>48 API migration cases</strong> (where a kernel API change requires driver adaptation) and <strong>23 regression cases</strong> (where a kernel change introduces a driver bug that must be detected and fixed). The split reflects the two primary use cases for KDRIFT: proactive migration and reactive regression repair.</p>
+
+  <p>Within each category, we create train/dev/test splits that are stratified along three dimensions:</p>
+
+  <ul>
+    <li><strong>Change type:</strong> Each split contains a representative mix of all 9 change classes. No split is dominated by a single class.</li>
+    <li><strong>Kernel subsystem:</strong> Cases span 14 subsystems (DRM, networking, USB, PCI, I2C, SPI, sound, platform, clocksource, watchdog, input, hwmon, media, GPIO). Each split covers at least 8 subsystems.</li>
+    <li><strong>Difficulty:</strong> Annotated on a 1-5 scale based on number of files changed, lines modified, and whether the change is syntactic or semantic. Each split has similar difficulty distributions.</li>
+  </ul>
+
+  <p>Critically, the splits enforce <strong>strict temporal ordering</strong>. All test cases come from kernel versions strictly newer than all training cases. This prevents temporal leakage — a model cannot achieve high test performance by memorizing patterns from the same kernel version. In practice, training cases are drawn from v5.10-v6.2, dev cases from v6.3-v6.5, and test cases from v6.6-v6.10.</p>
+
+  <h2>Validation Harness</h2>
+
+  <p>Each DRIFTBENCH case includes everything needed to validate a candidate patch through KDRIFT's four-stage pipeline. The validation harness is packaged as a self-contained environment:</p>
+
+  <ul>
+    <li><strong>Dockerfile:</strong> Builds a container with the exact kernel source, toolchain, Sparse, Smatch, and QEMU version needed for the case. Pinned to specific package versions for reproducibility.</li>
+    <li><strong>Kernel config:</strong> Minimal defconfig that enables the target driver. We use allnoconfig as a base and add only the Kconfig symbols needed, reducing build time from minutes to seconds.</li>
+    <li><strong>Validation script:</strong> Orchestrates the four stages: apply patch, compile, run Sparse+Smatch, boot in QEMU, run lockdep+KASAN tests. Each stage produces a structured pass/fail result with diagnostic output.</li>
+  </ul>
+
+  <p>Running validation is a single command:</p>
+
+  <pre># Validate a candidate patch against case 047
+driftbench run --case cases/case_047/ \
+  --patch candidate.patch \
+  --stages all
+
+# Output:
+# Stage 1 (compile):     PASS  [2.3s]
+# Stage 2 (sparse):      PASS  [1.1s]
+# Stage 3 (qemu-boot):   PASS  [18.4s]
+# Stage 4 (runtime):     FAIL  [34.2s]
+#   lockdep: possible deadlock in example_ioctl
+#
+# AST similarity to golden: 0.84
+# Overall: FAIL (3/4 stages passed)</pre>
+
+  <p>The harness also computes <strong>AST similarity</strong> between the candidate patch and the golden patch. This is not a pass/fail metric — it is a diagnostic that helps understand how close a failed patch is to the correct solution. A patch that fails Stage 4 with 0.90 AST similarity is much closer to correct than one that fails Stage 2 with 0.30 similarity.</p>
+
+  <h2>The Numbers</h2>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-n green">71</div>
+      <div class="metric-l">Total cases</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">20</div>
+      <div class="metric-l">Kernel versions</div>
+      <div class="metric-note">v5.10 – v6.10</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">14</div>
+      <div class="metric-l">Subsystems</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">9</div>
+      <div class="metric-l">Change types</div>
+    </div>
+  </div>
+
+  <div class="metrics-grid cols-3">
+    <div class="metric">
+      <div class="metric-n">3</div>
+      <div class="metric-l">Median files changed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">47</div>
+      <div class="metric-l">Median lines changed</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">~55s</div>
+      <div class="metric-l">Median validation time</div>
+    </div>
+  </div>
+
+  <p>The median case complexity is <strong>3 files and 47 lines changed</strong>. This is deliberately in the range where the task is non-trivial (not a single-line rename) but tractable (not a full subsystem rewrite). The distribution has a long tail — the most complex case touches 11 files and modifies 340 lines across a cross-subsystem DMA API change.</p>
+
+  <p>The 48/23 split between API migration cases and regression cases means DRIFTBENCH evaluates both <strong>proactive</strong> and <strong>reactive</strong> capabilities. Migration cases test whether a tool can adapt a driver to a known API change. Regression cases test whether a tool can identify that a kernel change broke a driver and generate the appropriate fix — a harder task because the tool must first diagnose the problem.</p>
+
+  <h2>Comparison with Prior Work</h2>
+
+  <p>To our knowledge, DRIFTBENCH is the first benchmark specifically designed for kernel code migration. The closest prior work includes:</p>
+
+  <ul>
+    <li><strong>SWE-bench (Jimenez et al., 2024):</strong> General-purpose software engineering benchmark. Python-centric, no kernel-specific validation.</li>
+    <li><strong>Defects4J (Just et al., 2014):</strong> Java bug benchmark. Focuses on bug detection and repair, not API migration.</li>
+    <li><strong>CodeXGLUE (Lu et al., 2021):</strong> Code understanding/generation benchmark. Includes code repair tasks but not system-level migration.</li>
+    <li><strong>Coccinelle test suites:</strong> Evaluation cases for the Coccinelle semantic patching tool. Covers syntactic transformations but not the semantic changes that DRIFTBENCH emphasizes.</li>
+  </ul>
+
+  <p>None of these include kernel-specific validation (Sparse, QEMU boot, lockdep/KASAN), none enforce temporal splits to prevent leakage, and none cover the full spectrum of kernel API change types.</p>
+
+  <h2>Availability</h2>
+
+  <p>DRIFTBENCH is released on <strong>HuggingFace</strong> under the <strong>Apache 2.0 license</strong>. The dataset includes all 71 cases with metadata, golden patches, validation scripts, and Dockerfiles. The driftbench CLI tool handles case extraction, validation, and result aggregation.</p>
+
+  <p>We welcome contributions: new cases from kernel versions beyond v6.10, additional subsystem coverage, and improvements to the validation harness. The extraction pipeline is documented and designed to be extended by the community.</p>
+
+  <blockquote>
+    <p>If you evaluate a kernel migration tool and want to report results on DRIFTBENCH, please use the official test split and report all four validation stages separately. Reporting only compile-pass rates without Sparse, QEMU, and runtime results is not meaningful for this domain.</p>
+  </blockquote>
+
+  <div class="aside">
+    DRIFTBENCH is used to evaluate both KDRIFT and third-party tools. For results, see the <a href="/features.html">features page</a> or the research paper.
+  </div>
+
+  <div class="article-nav">
+    <a href="/blog/" class="btn-outline">&larr; All posts</a>
+    <a href="/blog/lpa-vs-gma.html" class="btn-solid">Next: LPA vs GMA &rarr;</a>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

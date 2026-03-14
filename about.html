@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — kdrift</title>
+<meta name="description" content="Meet the team behind KDRIFT — automated kernel driver migration grounded in peer-reviewed research.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* PAGE */
+.page{padding-top:0}
+
+/* PAGE HEADER */
+.page-header{border-bottom:1px solid var(--border);padding:120px 0 80px}
+.page-header-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.hero-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:8px}
+.hero-label::before{content:'';width:20px;height:1px;background:var(--border3)}
+.page-header h1{font-size:clamp(32px,4.5vw,52px);font-weight:600;line-height:1.1;letter-spacing:-0.04em;margin-bottom:24px;max-width:720px}
+.page-header p{font-size:15px;color:var(--text2);line-height:1.7;max-width:600px;font-weight:300}
+
+/* SECTION */
+.section{border-top:1px solid var(--border)}
+.section-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.section-head{display:grid;grid-template-columns:200px 1fr;gap:48px;padding:48px 0 40px;border-bottom:1px solid var(--border)}
+.sh-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;padding-top:4px}
+.sh-title{font-size:clamp(22px,3vw,30px);font-weight:600;letter-spacing:-0.03em;line-height:1.15}
+.sh-sub{margin-top:12px;font-size:14px;color:var(--text2);line-height:1.65;max-width:560px;font-weight:300}
+
+/* PROSE */
+.prose{padding:40px 0;border-bottom:1px solid var(--border)}
+.prose p{font-size:14px;color:var(--text2);line-height:1.75;font-weight:300;max-width:680px}
+.prose p+p{margin-top:18px}
+.prose strong{color:var(--text);font-weight:500}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
+.metric{padding:32px 28px;border-right:1px solid var(--border);transition:background 0.2s}
+.metric:last-child{border-right:none}
+.metric:hover{background:var(--bg2)}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+.metric-note{font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:4px;line-height:1.5}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
+.card{padding:36px 28px;border-right:1px solid var(--border);transition:background 0.2s}
+.card:last-child{border-right:none}
+.card:hover{background:var(--bg2)}
+.card-n{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px}
+.card-name{font-size:16px;font-weight:500;letter-spacing:-0.02em;margin-bottom:10px}
+.card-desc{font-size:13px;color:var(--text3);line-height:1.65;font-weight:300}
+
+/* TEAM GRID */
+.team-grid{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--border)}
+.team-card{padding:36px 28px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background 0.2s}
+.team-card:nth-child(2n){border-right:none}
+.team-card:nth-last-child(-n+2){border-bottom:none}
+.team-card:hover{background:var(--bg2)}
+.team-avatar{width:44px;height:44px;background:var(--bg3);border:1px solid var(--border3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--text3);letter-spacing:0.04em;margin-bottom:16px}
+.team-name{font-size:15px;font-weight:500;letter-spacing:-0.02em;margin-bottom:4px}
+.team-role{font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:0.04em;margin-bottom:14px}
+.team-bio{font-size:13px;color:var(--text3);line-height:1.65;font-weight:300}
+
+/* TIMELINE */
+.timeline-item{display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);transition:background 0.2s}
+.timeline-item:last-child{border-bottom:none}
+.timeline-item:hover{background:var(--bg2)}
+.timeline-date{font-family:var(--mono);font-size:12px;color:var(--text3);letter-spacing:0.04em;padding:24px 28px;border-right:1px solid var(--border);display:flex;align-items:flex-start;padding-top:28px}
+.timeline-content{padding:24px 28px}
+.timeline-content p{font-size:13px;color:var(--text2);line-height:1.65;font-weight:300}
+.timeline-content strong{color:var(--text);font-weight:500}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+
+/* CTA */
+.cta-section{padding:64px 0;text-align:center}
+.cta-section h3{font-size:24px;font-weight:600;letter-spacing:-0.03em;margin-bottom:12px}
+.cta-section p{font-size:14px;color:var(--text2);font-weight:300;margin-bottom:28px}
+.cta-buttons{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+
+/* ANIMATED COUNTERS */
+[data-count]{font-variant-numeric:tabular-nums}
+
+/* FOOTER */
+footer{max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);flex-wrap:wrap;gap:16px}
+.foot-logo{font-family:var(--mono);font-size:13px;color:var(--text3)}
+.foot-links{display:flex;gap:24px;list-style:none;flex-wrap:wrap}
+.foot-links a{font-family:var(--mono);font-size:11px;color:var(--text4);text-decoration:none;letter-spacing:0.04em;transition:color 0.15s}
+.foot-links a:hover{color:var(--text3)}
+.foot-r{font-family:var(--mono);font-size:10px;color:var(--text4)}
+
+/* ANIMATIONS */
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.page-header .hero-label{animation:fadeup 0.45s ease forwards;opacity:0}
+.page-header h1{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+.page-header p{animation:fadeup 0.45s 0.12s ease forwards;opacity:0}
+
+/* MOBILE */
+@media(max-width:768px){
+  .page-header{padding:80px 0 48px}
+  .page-header-inner{padding:0 16px}
+  .section-head{grid-template-columns:1fr;gap:12px;padding:32px 16px 24px}
+  .section-inner{padding:0 16px}
+  .sh-label{padding-top:0}
+  .metrics-grid{grid-template-columns:1fr}
+  .metric{border-right:none;border-bottom:1px solid var(--border)}
+  .metric:last-child{border-bottom:none}
+  .cards-grid{grid-template-columns:1fr}
+  .card{border-right:none;border-bottom:1px solid var(--border)}
+  .card:last-child{border-bottom:none}
+  .team-grid{grid-template-columns:1fr}
+  .team-card{border-right:none}
+  .team-card:nth-last-child(-n+2){border-bottom:1px solid var(--border)}
+  .team-card:last-child{border-bottom:none}
+  .timeline-item{grid-template-columns:1fr}
+  .timeline-date{border-right:none;border-bottom:1px solid var(--border);padding:16px 16px 8px}
+  .timeline-content{padding:8px 16px 20px}
+  .prose{padding:24px 0}
+  .cta-section{padding:40px 16px}
+  footer{flex-direction:column;gap:16px;align-items:flex-start;padding:24px 16px}
+  .foot-links{flex-wrap:wrap;gap:16px}
+}
+</style>
+</head>
+<body data-page="about">
+
+<div class="page">
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="hero-label">About</div>
+    <h1>Kernel maintenance shouldn't be a manual process</h1>
+    <p>We're building the infrastructure to keep Linux drivers aligned with kernel evolution — automatically, verifiably, continuously.</p>
+  </div>
+</div>
+
+<!-- 01 — MISSION -->
+<div class="section" id="mission">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">01 — Mission</div>
+      <div>
+        <div class="sh-title">Why we exist</div>
+        <div class="sh-sub">Closing the gap between kernel evolution and the ecosystem that depends on it.</div>
+      </div>
+    </div>
+    <div class="prose">
+      <p>The Linux kernel evolves faster than the ecosystem around it can adapt. Every release introduces API changes that ripple through thousands of drivers. In-tree, maintainers coordinate these changes manually. Out-of-tree, teams are on their own.</p>
+      <p>KDRIFT started as a research project studying how LLMs handle kernel code migration — not just generating patches, but understanding why APIs change and validating that patches preserve correctness. The result is a system that treats migration as a closed-loop engineering problem, not a one-shot code generation task.</p>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-n" data-count="2024">2024</div>
+        <div class="metric-l">Founded</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Academic</div>
+        <div class="metric-l">Origin</div>
+        <div class="metric-note">University research lab</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Open Source</div>
+        <div class="metric-l">Core</div>
+        <div class="metric-note">MIT license</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 02 — RESEARCH -->
+<div class="section" id="research">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">02 — Research</div>
+      <div>
+        <div class="sh-title">Grounded in science</div>
+        <div class="sh-sub">KDRIFT is grounded in peer-reviewed research on LLM-assisted code migration, kernel API evolution, and automated program repair.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-n">Research Area 01</div>
+        <div class="card-name">Kernel API Evolution</div>
+        <div class="card-desc">Longitudinal analysis of internal API stability across 20 major kernel releases. Characterization of change types and their impact on driver code.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Research Area 02</div>
+        <div class="card-name">LLM Code Migration</div>
+        <div class="card-desc">Evaluation of frontier and open-source models on kernel-specific migration tasks. DRIFTBENCH as the first reproducible benchmark for this domain.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Research Area 03</div>
+        <div class="card-name">Automated Program Repair</div>
+        <div class="card-desc">Multi-agent architectures for iterative patch refinement with staged compiler and runtime feedback loops.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 03 — TEAM -->
+<div class="section" id="team">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">03 — Team</div>
+      <div>
+        <div class="sh-title">Who we are</div>
+        <div class="sh-sub">Systems researchers, kernel engineers, and ML practitioners building at the intersection of program analysis and language models.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">AM</div>
+        <div class="team-name">Alex Morozov</div>
+        <div class="team-role">Founder / Systems</div>
+        <div class="team-bio">PhD candidate in systems software. Research on kernel API evolution and automated driver migration. Previously contributed to kernel subsystem maintainer tooling.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">KL</div>
+        <div class="team-name">Katya Lebedev</div>
+        <div class="team-role">ML Engineering</div>
+        <div class="team-bio">Fine-tuning and reinforcement learning for code generation. Built the KERN model training pipeline. Background in program synthesis and compiler optimization.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">DR</div>
+        <div class="team-name">Daniel Richter</div>
+        <div class="team-role">Kernel Engineering</div>
+        <div class="team-bio">8 years in embedded Linux. Former BSP engineer at a major semiconductor vendor. Designed the validation harness and QEMU integration.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">SP</div>
+        <div class="team-name">Sofia Park</div>
+        <div class="team-role">Product & Growth</div>
+        <div class="team-bio">Previously at a developer tools startup. Responsible for enterprise partnerships and go-to-market. Focused on embedded Linux and automotive verticals.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 04 — TIMELINE -->
+<div class="section" id="timeline">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">04 — Timeline</div>
+      <div>
+        <div class="sh-title">Milestones</div>
+        <div class="sh-sub">From research prototype to production system.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div style="border-bottom:1px solid var(--border)">
+      <div class="timeline-item">
+        <div class="timeline-date">Q1 2024</div>
+        <div class="timeline-content"><p>Research project begins. Initial prototype for <strong>in-tree API migration</strong>.</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Q3 2024</div>
+        <div class="timeline-content"><p><strong>DRIFTBENCH v1</strong> released. 48 API migration cases with validation harness.</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Q1 2025</div>
+        <div class="timeline-content"><p>Multi-agent architecture (<strong>LPA + GMA</strong>). 56% compile success rate.</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Q3 2025</div>
+        <div class="timeline-content"><p>DRIFTBENCH expanded to <strong>71 cases</strong>. KERN-7B training begins.</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Q1 2026</div>
+        <div class="timeline-content"><p><strong>Public beta launch</strong>. Enterprise pilot program opens.</p></div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Q2 2026</div>
+        <div class="timeline-content"><p><strong>KERN-32B</strong> release. Out-of-tree driver support.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 05 — OPEN SOURCE & COMMUNITY -->
+<div class="section" id="community">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">05 — Open Source</div>
+      <div>
+        <div class="sh-title">Built in the open</div>
+        <div class="sh-sub">KDRIFT is MIT-licensed. DRIFTBENCH is Apache 2.0. We believe kernel maintenance tooling should be open.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div class="cards-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card">
+        <div class="card-n">GitHub</div>
+        <div class="card-name">Contribute</div>
+        <div class="card-desc">Contributions welcome. Issues, patches, and documentation improvements.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Paper</div>
+        <div class="card-name">Preprint</div>
+        <div class="card-desc">Research paper available on arXiv. Peer review in progress.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">DRIFTBENCH</div>
+        <div class="card-name">Dataset</div>
+        <div class="card-desc">HuggingFace dataset. 71 validated kernel API migration cases.</div>
+      </div>
+      <div class="card" style="border-right:none">
+        <div class="card-n">Community</div>
+        <div class="card-name">Discuss</div>
+        <div class="card-desc">Discussions, issues, and PRs. Join the conversation.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section-inner">
+    <div class="cta-section">
+      <h3>Join us</h3>
+      <p>We're looking for systems engineers, ML researchers, and kernel hackers.</p>
+      <div class="cta-buttons">
+        <a href="#" class="btn-solid">View open positions &rarr;</a>
+        <a href="https://github.com/kdrift" class="btn-outline">Or contribute on GitHub</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">kdrift.dev</div>
+  <ul class="foot-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="https://github.com/kdrift">GitHub</a></li>
+    <li><a href="#">Paper</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="foot-r">&copy; 2024–2026 KDRIFT</div>
+</footer>
+
+</div><!-- .page -->
+
+</body>
+</html>

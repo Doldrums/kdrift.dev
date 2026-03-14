@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — kdrift</title>
+<meta name="description" content="KDRIFT pricing — open source core, enterprise when you need it. CLI and DRIFTBENCH are free forever.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+</head>
+<body data-page="pricing">
+<div class="page">
+
+<!-- ── PAGE HEADER ──────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="hero-label">Pricing</div>
+    <h1>Open source core. Enterprise when you need it.</h1>
+    <p>KDRIFT CLI and DRIFTBENCH are free and open source. Enterprise adds CI/CD integration, proactive monitoring, and support for vendor kernel forks.</p>
+  </div>
+</div>
+
+<!-- ── PRICING GRID ────────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="pricing-grid" style="margin:40px 0">
+
+      <!-- Open Source -->
+      <div class="pricing-card">
+        <div class="pricing-tier">Community</div>
+        <div class="pricing-name">Open Source</div>
+        <div class="pricing-price">$0 <span>forever</span></div>
+        <div class="pricing-desc">Full CLI, benchmark suite, and evaluation harness. Everything you need for research and individual use.</div>
+        <ul class="pricing-features">
+          <li><code>kdrift migrate / check / validate</code> CLI</li>
+          <li>DRIFTBENCH dataset (71 cases)</li>
+          <li>Full 4-stage validation harness</li>
+          <li>In-tree mainline driver support</li>
+          <li>Community GitHub Issues support</li>
+          <li>MIT license</li>
+        </ul>
+        <a href="#" class="btn-outline">Star on GitHub &rarr;</a>
+      </div>
+
+      <!-- Team (featured) -->
+      <div class="pricing-card featured">
+        <div class="pricing-tier">Team</div>
+        <div class="pricing-name">Team</div>
+        <div class="pricing-price">$490 <span>/ month</span></div>
+        <div class="pricing-desc">For teams maintaining 10-50 out-of-tree drivers. CI/CD integration and linux-next monitoring.</div>
+        <ul class="pricing-features">
+          <li>Everything in Open Source</li>
+          <li>GitHub Actions / GitLab CI integration</li>
+          <li>Out-of-tree driver support</li>
+          <li>linux-next proactive monitoring</li>
+          <li>Up to 50 drivers monitored</li>
+          <li>Up to 100 migration runs / month</li>
+          <li>Email support (48h SLA)</li>
+          <li>Dashboard &amp; audit logs</li>
+        </ul>
+        <a href="#" class="btn-green">Start free trial &rarr;</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-name">Enterprise</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-desc">For organizations with large driver portfolios, vendor kernel forks, and compliance requirements.</div>
+        <ul class="pricing-features">
+          <li>Everything in Team</li>
+          <li>Unlimited drivers &amp; migration runs</li>
+          <li>Vendor kernel fork support (custom BSPs)</li>
+          <li>Dedicated KERN model fine-tuning</li>
+          <li>Self-hosted deployment option</li>
+          <li>SSO / SAML integration</li>
+          <li>Compliance reporting &amp; audit trail</li>
+          <li>SLA with dedicated support engineer</li>
+          <li>Custom validation stages</li>
+          <li>Onboarding &amp; training</li>
+        </ul>
+        <a href="#" class="btn-solid">Talk to us &rarr;</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── COST COMPARISON ─────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">&sect; 01 &mdash; ROI</div>
+      <div>
+        <div class="sh-title">The cost of not upgrading</div>
+        <div class="sh-sub">Delayed kernel upgrades compound risk. Manual migrations drain engineering time. Here's what the numbers look like.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner">
+    <div class="metrics-grid cols-3" style="margin-top:0">
+      <div class="metric">
+        <div class="metric-n" data-count="340" data-suffix=" hours">0 hours</div>
+        <div class="metric-l">Average manual migration time</div>
+        <div class="metric-note">Per major kernel version, per driver portfolio</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green" data-count="51000" data-prefix="$">$0</div>
+        <div class="metric-l">Estimated cost per delayed upgrade</div>
+        <div class="metric-note">Engineer time + CVE exposure window</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" data-count="4.2" data-suffix=" months">0 months</div>
+        <div class="metric-l">Average kernel version lag</div>
+        <div class="metric-note">For out-of-tree driver maintainers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-meta">
+      <div class="table-meta-l">Migration cost comparison</div>
+      <div class="table-meta-r">Per major kernel version upgrade, 20-driver portfolio</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Manual</th>
+          <th>KDRIFT Team</th>
+          <th>KDRIFT Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mn">Migration time</td>
+          <td>340 hours</td>
+          <td class="best">38 hours</td>
+          <td class="best">24 hours</td>
+        </tr>
+        <tr>
+          <td class="mn">Cost per upgrade</td>
+          <td>$51,000</td>
+          <td class="best">$5,880</td>
+          <td class="best">Custom</td>
+        </tr>
+        <tr>
+          <td class="mn">Kernel lag</td>
+          <td>4.2 months</td>
+          <td class="best">2-3 weeks</td>
+          <td class="best">&lt; 1 week</td>
+        </tr>
+        <tr>
+          <td class="mn">CVE exposure window</td>
+          <td>126 days avg</td>
+          <td class="best">14-21 days</td>
+          <td class="best">&lt; 7 days</td>
+        </tr>
+        <tr>
+          <td class="mn">CI/CD integration</td>
+          <td class="low">Manual scripts</td>
+          <td class="best">Native</td>
+          <td class="best">Native + custom</td>
+        </tr>
+        <tr>
+          <td class="mn">Proactive monitoring</td>
+          <td class="low">None</td>
+          <td class="best">linux-next</td>
+          <td class="best">linux-next + vendor trees</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-note">Estimates based on industry surveys and KDRIFT beta program data. Actual results vary by driver complexity and team size.</div>
+  </div>
+</div>
+
+<!-- ── FAQ ──────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">&sect; 02 &mdash; FAQ</div>
+      <div>
+        <div class="sh-title">Frequently asked questions</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner">
+    <div class="cards-grid cols-2">
+      <div class="card">
+        <div class="card-name">What counts as a migration run?</div>
+        <div class="card-desc">Each invocation of <code>kdrift migrate</code> for a single driver across a kernel version range. Check and validate don't count.</div>
+      </div>
+      <div class="card">
+        <div class="card-name">Can I use KDRIFT with vendor kernels?</div>
+        <div class="card-desc">Team plan supports standard vendor kernels (Android common, Ubuntu, RHEL). Enterprise supports fully custom forks with divergent APIs.</div>
+      </div>
+      <div class="card">
+        <div class="card-name">What if a migration fails?</div>
+        <div class="card-desc">KDRIFT never delivers an unvalidated patch. Failed migrations are logged with diagnostics. Enterprise gets root-cause analysis.</div>
+      </div>
+      <div class="card">
+        <div class="card-name">Do you store our driver source code?</div>
+        <div class="card-desc">No. KDRIFT runs locally or in your CI. Source code never leaves your infrastructure. Enterprise self-hosted option available.</div>
+      </div>
+      <div class="card">
+        <div class="card-name">Can I switch plans?</div>
+        <div class="card-desc">Yes, upgrade or downgrade anytime. Team to Enterprise migration is seamless.</div>
+      </div>
+      <div class="card">
+        <div class="card-name">What LLM models are used?</div>
+        <div class="card-desc">KDRIFT supports multiple backends: Claude, GPT, Qwen, DeepSeek. You choose the model. Enterprise can use KERN fine-tuned models.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ──────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner" style="padding:64px 24px;text-align:center">
+    <div class="sh-title" style="margin-bottom:24px">Not sure which plan?</div>
+    <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap">
+      <a href="#" class="btn-solid">Talk to us &rarr;</a>
+    </div>
+    <div style="margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text4)">Or star the repo to get started for free</div>
+  </div>
+</div>
+
+</div><!-- /.page -->
+</body>
+</html>

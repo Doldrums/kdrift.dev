@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semantic Realignment — kdrift blog</title>
+<meta name="description" content="The class of kernel changes that silently break drivers by changing behavioral contracts without altering function signatures.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.page{min-height:100vh}
+
+/* ARTICLE */
+.article{max-width:720px;margin:0 auto;padding:120px 24px 80px}
+.article-meta{font-family:var(--mono);font-size:11px;color:var(--text4);letter-spacing:0.05em;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+.article-meta span{display:inline-flex;align-items:center;gap:6px}
+.article h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:24px}
+.article h2{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-top:48px;margin-bottom:16px;padding-top:24px;border-top:1px solid var(--border)}
+.article h3{font-size:16px;font-weight:500;letter-spacing:-0.01em;margin-top:32px;margin-bottom:12px}
+.article p{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:20px}
+.article p strong{color:var(--text);font-weight:500}
+.article ul,.article ol{margin-bottom:20px;padding-left:0;list-style:none}
+.article li{font-size:14px;color:var(--text2);line-height:1.7;font-weight:300;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.article li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0}
+.article blockquote{border-left:2px solid var(--border3);padding:16px 20px;margin:24px 0;background:var(--bg2)}
+.article blockquote p{font-size:14px;color:var(--text3);margin-bottom:0;font-style:italic}
+.article pre{background:var(--bg1);border:1px solid var(--border2);padding:20px 24px;margin:24px 0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text2)}
+.article .aside{font-family:var(--mono);font-size:11px;color:var(--text4);border-left:1px solid var(--border2);padding-left:12px;margin:24px 0;line-height:1.7}
+.article .aside a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border3);transition:color 0.15s}
+.article .aside a:hover{color:var(--text2)}
+
+/* DIFF BOX */
+.diff-box{background:var(--bg1);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;line-height:1.7;overflow:hidden;margin:24px 0}
+.diff-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.diff-fname{color:var(--text3);font-size:11px}
+.diff-info{color:var(--text4);font-size:10px;letter-spacing:0.04em}
+.diff-body{padding:4px 0}
+.dl{display:flex;padding:1px 16px}
+.dl-add{background:rgba(34,197,94,0.05)}
+.dl-rem{background:rgba(239,68,68,0.05)}
+.dl-hunk{background:rgba(96,165,250,0.04)}
+.ds{min-width:12px;margin-right:12px;flex-shrink:0}
+.ds-add{color:#22c55e}.ds-rem{color:#ef4444}.ds-ctx{color:#2a2a2a}.ds-hunk{color:#3b5a8a}
+.dc{color:#aaa}
+.dc-add{color:rgba(134,239,172,0.85)}
+.dc-rem{color:rgba(252,165,165,0.7)}
+.dc-hunk{color:#3b5a8a;font-style:italic}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:24px 0}
+.metric{background:var(--bg);padding:24px 20px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-n.green{color:var(--green)}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+.article-nav{display:flex;gap:12px;margin-top:48px;flex-wrap:wrap}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.article h1{animation:fadeup 0.45s ease forwards;opacity:0}
+.article-meta{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+
+@media(max-width:768px){
+  .article{padding:80px 16px 60px}
+  .metrics-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<div class="article">
+
+  <div class="article-meta">
+    <span>Research</span>
+    <span>Mar 7, 2026</span>
+    <span>10 min read</span>
+  </div>
+
+  <h1>Semantic Realignment: The Class of Kernel Changes That Silently Break Drivers</h1>
+
+  <p>Some kernel changes don't change function signatures at all. The compiler stays quiet. Sparse stays clean. The driver loads, probes its hardware, and appears to function normally. Then something goes wrong at runtime under specific hardware conditions — a device fails to resume from suspend, a DMA transfer corrupts memory after hours of operation, or an interrupt handler runs in the wrong context.</p>
+
+  <p>These are <strong>semantic realignment changes</strong>: modifications to the kernel that alter the behavioral contract of an API without changing its syntactic interface. They are the hardest class of kernel evolution to detect, the hardest to migrate, and the most dangerous to miss. In DRIFTBENCH, they account for 23% of all cases and have the lowest automated resolution rate of any change class.</p>
+
+  <p>This post explains what semantic realignment is, walks through a real example, and describes how KDRIFT approaches detection and migration for this class of changes.</p>
+
+  <h2>What Is Semantic Realignment?</h2>
+
+  <p>In the KDRIFT taxonomy, we classify kernel API changes into nine categories. Classes 1 through 4 are <strong>syntactic changes</strong> — they alter the interface itself. A function is renamed, an argument is added, a return type changes, a struct is reorganized. These are visible to the compiler. A driver that doesn't adapt to them won't build.</p>
+
+  <p>Classes 5 through 9 include changes that may or may not alter the syntax but fundamentally alter the <strong>behavioral semantics</strong>. Semantic realignment specifically refers to cases where the syntax is unchanged or trivially changed, but the expected behavior of the API has shifted. Examples from real kernel evolution include:</p>
+
+  <ul>
+    <li><strong>Power management callback ordering:</strong> The kernel changes the order in which suspend/resume callbacks are invoked across the device tree, breaking drivers that assumed their parent device would be resumed before them.</li>
+    <li><strong>Interrupt handler registration semantics:</strong> A shared interrupt handler that previously received a filtered subset of interrupts now receives all interrupts and must filter them itself.</li>
+    <li><strong>DMA mapping lifetime assumptions:</strong> A streaming DMA mapping that was previously valid until explicitly unmapped now has its lifetime tied to the transaction, requiring remapping for each operation.</li>
+    <li><strong>Error return value meaning:</strong> A function that previously returned 0 on success and negative errno on failure now returns positive values with specific meanings, while still returning negative errno for errors.</li>
+  </ul>
+
+  <p>In every one of these cases, <strong>the function signature is identical between kernel versions</strong>. The compiler sees no difference. Static analysis sees no type violation. The driver builds, loads, and may even pass basic functional tests. The failure only manifests under specific conditions — suspend/resume cycles, high interrupt rates, sustained DMA traffic, or particular error recovery paths.</p>
+
+  <h2>A Real Example — PM Runtime</h2>
+
+  <p>Let's walk through a concrete case. The function <strong>pm_runtime_get_sync()</strong> is used by hundreds of drivers to resume a device from runtime suspend. Its signature has remained stable for years:</p>
+
+  <pre>int pm_runtime_get_sync(struct device *dev);</pre>
+
+  <p>The function increments the device's runtime PM usage counter and attempts to resume the device. The return value has always been an int. But its semantics shifted between kernel versions in a subtle way.</p>
+
+  <p>In older kernels, pm_runtime_get_sync() returned 0 on success when the device was already active, 1 on success when the device was resumed, and a negative errno on failure. Many drivers checked for failure like this:</p>
+
+  <pre>ret = pm_runtime_get_sync(dev);
+if (ret &lt; 0) {
+    pm_runtime_put_noidle(dev);
+    return ret;
+}</pre>
+
+  <p>This worked. If the device was already active, ret was 0. If it needed resuming, ret was 1. Both are "not less than zero," so both pass the check. Failures return negative values and are caught.</p>
+
+  <p>Then the kernel changed how pm_runtime_get_sync() handles the case where the device's resume callback itself returns an error. In the new semantics, the function <strong>still increments the usage counter even on failure</strong>. This means the error path must always call pm_runtime_put_noidle() to decrement the counter — not just when ret &lt; 0, but always when the operation didn't achieve the desired state.</p>
+
+  <p>Drivers that only call pm_runtime_put_noidle() on negative return values now <strong>leak a usage count reference</strong> when the resume callback fails after the counter was incremented. The device can never enter runtime suspend again. Battery life degrades. The system slowly accumulates permanently-awake devices.</p>
+
+  <div class="diff-box">
+    <div class="diff-head">
+      <span class="diff-fname">drivers/example/pm_fix.c</span>
+      <span class="diff-info">semantic: pm_runtime_get_sync error handling</span>
+    </div>
+    <div class="diff-body">
+      <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -87,7 +87,7 @@ static int example_open(struct inode *inode, struct file *file)</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    ret = pm_runtime_get_sync(&amp;pdev->dev);</span></div>
+      <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">    if (ret &lt; 0) {</span></div>
+      <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">    if (ret &lt; 0) {  /* must also put on failure to balance refcount */</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">        pm_runtime_put_noidle(&amp;pdev->dev);</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">        return ret;</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    }</span></div>
+    </div>
+  </div>
+
+  <p>This is a simplified illustration, but the real fix is more nuanced. The correct migration often involves switching to <strong>pm_runtime_resume_and_get()</strong>, a newer wrapper that was introduced precisely because the pm_runtime_get_sync() semantics were a source of persistent bugs. The wrapper handles the refcount correctly on failure, making the caller's job simpler. But recognizing that this substitution is needed requires understanding the semantic shift — something no compiler or static analyzer can do from the code alone.</p>
+
+  <h2>Why Static Analysis Misses This</h2>
+
+  <p>Sparse and Smatch analyze <strong>syntax and type flow</strong>. They can verify that you're not dereferencing a null pointer, that you're using the right type annotations, that your lock ordering is consistent. But they cannot model behavioral contracts that exist only in documentation, commit messages, and maintainer knowledge.</p>
+
+  <p>The pm_runtime_get_sync() example is instructive. Both the old and new versions have the same signature. The return type is int in both cases. The values returned are valid ints. The bug is not in the types — it's in the <strong>interpretation</strong> of the return value and its interaction with the refcount side effect. This is a semantic property, not a syntactic one.</p>
+
+  <p>Static analysis tools could theoretically be extended with API-specific models that encode these behavioral contracts. Some work has been done in this direction — the kernel's own documentation infrastructure has been slowly adding structured contract annotations. But the coverage is incomplete, and the rate of API evolution outpaces the rate of annotation.</p>
+
+  <p>The fundamental problem is that <strong>behavioral contracts are implicit</strong>. They live in the collective understanding of subsystem maintainers. They are communicated through commit messages, mailing list discussions, and code review comments. Extracting them requires reading natural language, not parsing C.</p>
+
+  <h2>How KDRIFT Detects Semantic Changes</h2>
+
+  <p>KDRIFT uses a multi-signal approach to identify semantic realignment. No single signal is sufficient, but the combination provides high-confidence detection:</p>
+
+  <ul>
+    <li><strong>AST-differential analysis:</strong> Compare the abstract syntax trees of the API implementation between kernel versions. Even when the signature is unchanged, the function body may have altered control flow, different error paths, or new side effects.</li>
+    <li><strong>Commit message analysis:</strong> The kernel's commit messages are unusually detailed. When a semantic change is made, the commit message almost always explains why. NLP extraction of intent signals from commit messages identifies changes that are described as "fixing" or "changing" behavior.</li>
+    <li><strong>Documentation delta extraction:</strong> Compare the kernel documentation (both in-tree doc comments and Documentation/ files) between versions. Changes to behavioral descriptions without corresponding signature changes are strong indicators of semantic realignment.</li>
+    <li><strong>Co-change pattern mining:</strong> If a kernel commit changes an API implementation and simultaneously updates multiple drivers that use it, the driver-side changes reveal the adaptation pattern. Semantic changes typically require non-trivial driver adaptations even when the signature is stable.</li>
+  </ul>
+
+  <p>The 9-class taxonomy used by KDRIFT explicitly separates syntactic from semantic changes. Classes 5 (lifecycle/ordering), 6 (concurrency/locking), 7 (error handling semantics), and 8 (security/permissions) are all semantic in nature. This classification drives the choice of migration strategy — syntactic changes go to the LPA (fast-path agent), while semantic changes are escalated to the GMA (global migration agent).</p>
+
+  <h2>The GMA Approach</h2>
+
+  <p>For semantic changes, the <strong>Global Migration Agent (GMA)</strong> uses full repository context to understand the behavioral shift before generating a patch. Unlike the Local Patch Agent, which works from a classification and an AST delta alone, the GMA has access to:</p>
+
+  <ul>
+    <li>The kernel commit that made the change, including the full commit message</li>
+    <li>The kernel documentation for the affected API, before and after</li>
+    <li>Other driver adaptations from the same kernel commit (in-tree examples)</li>
+    <li>The full source of the target driver, not just the affected function</li>
+    <li>Grep and AST query tools to search for related patterns in the codebase</li>
+  </ul>
+
+  <p>The GMA's approach to semantic changes is fundamentally different from its approach to syntactic changes. For a syntactic change, the task is <strong>mechanical transformation</strong> — update the call site to match the new signature. For a semantic change, the task is <strong>behavioral reasoning</strong> — understand what the old code was trying to do, understand how the API's behavior has shifted, and determine what the new code must do to preserve the original intent.</p>
+
+  <p>This often requires changes in multiple locations within a driver. The pm_runtime_get_sync() example might require updating error handling in every function that calls it, adding cleanup code in error paths, and potentially restructuring the driver's power management flow to use the newer pm_runtime_resume_and_get() wrapper.</p>
+
+  <p>The GMA iterates with compiler and validation feedback. For semantic changes, it typically takes 3-5 iterations to converge on a correct patch, compared to 1-2 for syntactic changes. This is expected — behavioral reasoning is harder than syntactic transformation.</p>
+
+  <h2>Frequency in DRIFTBENCH</h2>
+
+  <p>Semantic realignment is not rare. In the DRIFTBENCH corpus:</p>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-n">23%</div>
+      <div class="metric-l">Semantic cases</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">38%</div>
+      <div class="metric-l">Resolution rate</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n green">3.4x</div>
+      <div class="metric-l">Harder than syntactic</div>
+    </div>
+  </div>
+
+  <p>23% of all migration cases in DRIFTBENCH involve semantic realignment as the primary change type. The automated resolution rate for these cases is 38%, compared to 67% for purely syntactic changes — <strong>roughly 3.4 times harder</strong>. The patches that fail tend to fail at Stage 4 (runtime analysis), which is consistent with the behavioral nature of the bugs.</p>
+
+  <p>Across the 20 kernel versions in DRIFTBENCH (v5.10 through v6.10), semantic changes are concentrated in certain subsystems. Power management, DMA/IOMMU, and the networking stack have the highest rates of semantic realignment. These are subsystems where behavioral contracts are complex and evolving — exactly the subsystems where out-of-tree drivers are most common.</p>
+
+  <p>The trend is also notable: the rate of semantic changes has been <strong>increasing</strong> over recent kernel versions. As the kernel matures, the easy syntactic cleanups (renaming, deduplication, argument reordering) are increasingly done. What remains are the harder refactorings that change how subsystems behave. This means the problem of semantic realignment will become more important over time, not less.</p>
+
+  <p>Understanding semantic realignment is essential for anyone building or using kernel migration tools. It defines the ceiling of what purely syntactic approaches can achieve and motivates the need for tools that reason about behavior, not just structure. It is the reason KDRIFT exists as a multi-agent system with staged validation, rather than a simple code transformation tool.</p>
+
+  <div class="aside">
+    The DRIFTBENCH dataset includes labels for semantic vs. syntactic changes. See <a href="/blog/building-driftbench.html">Building DRIFTBENCH</a> for details on the extraction methodology.
+  </div>
+
+  <div class="article-nav">
+    <a href="/blog/" class="btn-outline">&larr; All posts</a>
+    <a href="/blog/building-driftbench.html" class="btn-solid">Next: Building DRIFTBENCH &rarr;</a>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

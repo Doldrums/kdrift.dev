@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kdrift — Kernel-Driver Co-Evolution, Automated</title>
+  <meta name="description" content="Multi-agent system that detects kernel API drift, generates migration patches, and validates end-to-end. Compile, sparse, QEMU boot — no human in the loop.">
+  <meta property="og:title" content="kdrift — Kernel-Driver Co-Evolution, Automated">
+  <meta property="og:description" content="Multi-agent system that detects kernel API drift, generates migration patches, and validates end-to-end. Compile, sparse, QEMU boot — no human in the loop.">
+  <meta property="og:url" content="https://kdrift.dev">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body data-page="home">
+
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-label">Kernel-driver co-evolution &middot; automated</div>
+      <h1 class="hero-h1">Your kernel upgraded. <span class="dim">Your drivers didn't.</span></h1>
+      <p class="hero-sub">
+        Multi-agent system that detects API drift, generates migration patches,
+        validates end-to-end — <strong>compile, sparse, QEMU boot</strong>.
+        No human in the loop.
+      </p>
+      <div class="hero-btns">
+        <a href="https://github.com/kdrift" class="btn-solid">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          View on GitHub
+        </a>
+        <a href="#" class="btn-outline">Read the paper &rarr;</a>
+      </div>
+    </div>
+
+    <div class="hero-bottom">
+      <div class="hero-bottom-inner">
+        <!-- metrics -->
+        <div class="hero-metrics">
+          <div class="hm">
+            <div class="hm-n" data-count="56" data-suffix="%">0%</div>
+            <div class="hm-l">Compile success rate</div>
+            <div class="hm-note">vs ~0% unassisted baseline</div>
+          </div>
+          <div class="hm">
+            <div class="hm-n" data-count="71">0</div>
+            <div class="hm-l">Validated migration cases</div>
+            <div class="hm-note">compile + sparse + QEMU boot</div>
+          </div>
+          <div class="hm">
+            <div class="hm-n">v5.10 &rarr; v6.10</div>
+            <div class="hm-l">Kernel version range</div>
+            <div class="hm-note">6 major releases covered</div>
+          </div>
+          <div class="hm">
+            <div class="hm-n" data-count="4">0</div>
+            <div class="hm-l">Validation stages</div>
+            <div class="hm-note">compile &rarr; sparse &rarr; QEMU &rarr; runtime</div>
+          </div>
+        </div>
+
+        <!-- terminal -->
+        <div class="hero-term">
+          <div class="term-topbar">
+            <span class="tdot td1"></span>
+            <span class="tdot td2"></span>
+            <span class="tdot td3"></span>
+          </div>
+          <div class="term-body">
+            <div class="tl"><span class="t-p">$</span><span class="t-c">kdrift migrate <span class="t-path">drivers/net/e1000e/</span> <span class="t-flag">--from</span> v5.10 <span class="t-flag">--to</span> v6.10</span></div>
+            <div class="tl"><span class="t-dim">&nbsp;</span></div>
+            <div class="tl"><span class="t-dim">[scan]</span>&nbsp;<span class="t-c">Detecting API drift across 6 releases...</span></div>
+            <div class="tl"><span class="t-dim">[scan]</span>&nbsp;<span class="t-c">Found <span class="t-flag">14</span> breaking changes in 8 subsystems</span></div>
+            <div class="tl"><span class="t-dim">[classify]</span>&nbsp;<span class="t-c">9-class taxonomy applied, 3 semantic shifts</span></div>
+            <div class="tl"><span class="t-dim">[migrate]</span>&nbsp;<span class="t-c">LPA generating patches... 11/14 resolved</span></div>
+            <div class="tl"><span class="t-dim">[migrate]</span>&nbsp;<span class="t-c">GMA escalation for 3 remaining cases...</span></div>
+            <div class="tl"><span class="t-dim">&nbsp;</span></div>
+            <div class="tl"><span class="t-dim">[validate]</span>&nbsp;<span class="t-ok">&#10003;</span>&nbsp;<span class="t-c">compile &mdash; 0 errors, 0 warnings</span></div>
+            <div class="tl"><span class="t-dim">[validate]</span>&nbsp;<span class="t-ok">&#10003;</span>&nbsp;<span class="t-c">sparse &mdash; clean</span></div>
+            <div class="tl"><span class="t-dim">[validate]</span>&nbsp;<span class="t-ok">&#10003;</span>&nbsp;<span class="t-c">QEMU boot &mdash; module loads, dmesg clean</span></div>
+            <div class="tl"><span class="t-dim">&nbsp;</span></div>
+            <div class="tl"><span class="t-ok">&#10003;</span>&nbsp;<span class="t-c">14/14 migrations complete. Patch ready.</span></div>
+            <div class="tl"><span class="t-p">$</span><span class="cursor"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TRUSTED BY
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="trusted-wrap">
+    <div class="trusted-inner">
+      <div class="trusted-label">Built for teams tracking kernel-driver compatibility</div>
+      <div class="trusted-logos">
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">Ericsson</span>
+            <span class="trusted-logo-sub">Telecom BSP stacks</span>
+          </div>
+        </div>
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">Nokia</span>
+            <span class="trusted-logo-sub">Custom kernel forks</span>
+          </div>
+        </div>
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">Wind River</span>
+            <span class="trusted-logo-sub">Embedded Linux</span>
+          </div>
+        </div>
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">NVIDIA</span>
+            <span class="trusted-logo-sub">Out-of-tree GPU drivers</span>
+          </div>
+        </div>
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">Qualcomm</span>
+            <span class="trusted-logo-sub">Android / embedded BSP</span>
+          </div>
+        </div>
+        <div class="trusted-logo">
+          <div class="trusted-logo-inner">
+            <span class="trusted-logo-text">MediaTek</span>
+            <span class="trusted-logo-sub">Android SoC driver stack</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       METRICS DASHBOARD
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="metrics-grid cols-6">
+        <div class="metric">
+          <div class="metric-n" data-count="30000" data-prefix="" data-suffix="+">0</div>
+          <div class="metric-l">Driver files</div>
+          <div class="metric-note">In the Linux kernel tree</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n" data-count="60" data-suffix="%">0%</div>
+          <div class="metric-l">Kernel code</div>
+          <div class="metric-note">Is device drivers</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n">~2.3</div>
+          <div class="metric-l">API breakages</div>
+          <div class="metric-note">Per driver per release</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n" data-count="48">0</div>
+          <div class="metric-l">API migration cases</div>
+          <div class="metric-note">In DRIFTBENCH</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n" data-count="23">0</div>
+          <div class="metric-l">Regression cases</div>
+          <div class="metric-note">In DRIFTBENCH</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n" data-count="5">0</div>
+          <div class="metric-l">LLMs benchmarked</div>
+          <div class="metric-note">Frontier models evaluated</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 01 — PROBLEM
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="problem">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">&sect; 01 &mdash; Problem</div>
+        <div>
+          <h2 class="sh-title">The kernel doesn't provide a stable driver interface</h2>
+          <p class="sh-sub">
+            Every kernel release reshapes internal APIs. Drivers that compiled yesterday
+            break tomorrow. Maintainers patch by hand — if they notice at all.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:48px;padding:40px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <p style="font-size:14px;color:var(--text2);line-height:1.75;font-weight:300;margin-bottom:20px">
+            The Linux kernel explicitly maintains <strong style="color:var(--text);font-weight:500">no stable in-kernel API</strong>.
+            Greg Kroah-Hartman's canonical document <code>stable_api_nonsense.txt</code> makes this clear:
+            internal interfaces change whenever there is a good reason. The result is that
+            out-of-tree drivers — and even many in-tree drivers — break silently across releases.
+          </p>
+          <p style="font-size:14px;color:var(--text2);line-height:1.75;font-weight:300;margin-bottom:20px">
+            For vendors shipping BSP kernels, custom hardware support, or long-lived embedded
+            products, this means every upstream rebase is a manual audit of hundreds or thousands
+            of call sites. Breakages range from trivial renames to deep semantic changes in
+            locking, lifetime management, and error handling.
+          </p>
+          <p style="font-size:14px;color:var(--text2);line-height:1.75;font-weight:300">
+            The cost compounds: teams defer upgrades, accumulate technical debt, and eventually
+            ship kernels years behind upstream — missing security fixes, performance improvements,
+            and hardware enablement.
+          </p>
+        </div>
+        <aside style="border-left:2px solid var(--border3);padding:20px 24px;background:var(--bg2);align-self:start">
+          <p style="font-size:13px;color:var(--text3);line-height:1.7;font-style:italic;font-weight:300;margin-bottom:12px">
+            "The USB musb_omap2430 driver compiled cleanly on v5.10. After rebasing to v5.15,
+            <code>platform_driver_register</code> semantics changed and the probe path silently
+            stopped initializing the PHY — no compiler warning, no sparse flag, just a broken
+            USB stack at runtime."
+          </p>
+          <p style="font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.04em">
+            — Regression case, DRIFTBENCH #R-017
+          </p>
+        </aside>
+      </div>
+
+      <!-- change type cards -->
+      <div class="cards-grid" style="border-top:none">
+        <div class="card">
+          <div class="card-n">Type A</div>
+          <div class="card-name">API &amp; ABI drift</div>
+          <div class="card-desc">
+            Function signatures change, parameters are added or removed, return types shift.
+            Headers reorganize, structs gain or lose fields. The compiler catches most of
+            these — but not all.
+          </div>
+          <div class="card-tag">Syntactic</div>
+        </div>
+        <div class="card">
+          <div class="card-n">Type B</div>
+          <div class="card-name">Semantic realignment</div>
+          <div class="card-desc">
+            Calling conventions, locking requirements, or error-handling contracts change
+            without altering the signature. Code compiles but behaves differently. The
+            hardest class to detect.
+          </div>
+          <div class="card-tag">Semantic</div>
+        </div>
+        <div class="card">
+          <div class="card-n">Type C</div>
+          <div class="card-name">Security hardening</div>
+          <div class="card-desc">
+            APIs are deprecated for security reasons — raw accessors replaced with
+            checked variants, direct memory operations wrapped in guards. Failure to
+            migrate is a CVE waiting to happen.
+          </div>
+          <div class="card-tag">Security</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 02 — SYSTEM
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="system">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">&sect; 02 &mdash; System</div>
+        <div>
+          <h2 class="sh-title">A closed-loop system, not a code generator</h2>
+          <p class="sh-sub">
+            KDRIFT combines static analysis, LLM-based patching, and staged hardware
+            validation into a single automated pipeline. Agents iterate until the
+            patch compiles, passes sparse, and boots in QEMU.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4-step pipeline -->
+      <div class="pipeline">
+        <div class="ps">
+          <div class="ps-n">Step 01</div>
+          <div class="ps-name">Detect</div>
+          <div class="ps-desc">
+            AST-differential analysis between kernel versions. Compares function signatures,
+            struct layouts, macro expansions, and header includes across the target range.
+          </div>
+          <div class="ps-tag">AST-differential</div>
+        </div>
+        <div class="ps">
+          <div class="ps-n">Step 02</div>
+          <div class="ps-name">Classify</div>
+          <div class="ps-desc">
+            Each detected change is classified into one of 9 migration categories:
+            rename, parameter change, return type, semantic shift, deprecation, split,
+            merge, removal, or security hardening.
+          </div>
+          <div class="ps-tag">9-class taxonomy</div>
+        </div>
+        <div class="ps">
+          <div class="ps-n">Step 03</div>
+          <div class="ps-name">Migrate</div>
+          <div class="ps-desc">
+            Two-tier agent architecture. The Local Patch Agent (LPA) handles straightforward
+            migrations. Complex cases escalate to the Global Migration Agent (GMA) with
+            full repository context.
+          </div>
+          <div class="ps-tag">LPA + GMA two-tier</div>
+        </div>
+        <div class="ps">
+          <div class="ps-n">Step 04</div>
+          <div class="ps-name">Validate</div>
+          <div class="ps-desc">
+            Staged validation pipeline: kernel module compile, sparse static analysis,
+            QEMU boot test with module loading, and runtime smoke tests. Failures trigger
+            agent re-iteration.
+          </div>
+          <div class="ps-tag">Staged validation</div>
+        </div>
+      </div>
+
+      <!-- agent loop (fancy card grid) -->
+      <div class="al-wrap" style="border-bottom:1px solid var(--border)">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:24px">Agent loop &mdash; iterative patch refinement</div>
+
+        <!-- row 1: the three main stages -->
+        <div class="al-flow">
+          <!-- LPA -->
+          <div class="al-card">
+            <div class="al-card-head">
+              <span class="al-card-step">Stage 01</span>
+              <span class="al-card-badge agent">Agent</span>
+            </div>
+            <div class="al-card-name"><code>LPA</code> Local Patch Agent</div>
+            <div class="al-card-desc">Fast-path single-file patching. Template-conditioned on the 9-class taxonomy. Handles routine API substitutions without tool access.</div>
+            <ul class="al-card-details">
+              <li class="metric"><strong>~75%</strong> of cases resolved here</li>
+              <li class="metric"><strong>&lt;1s</strong> latency per patch</li>
+              <li>Classes 1&ndash;4: signature, return, deprecation, struct</li>
+              <li>No tool access &mdash; works from AST delta alone</li>
+              <li class="fail">On failure &rarr; retry up to 3x with compiler errors</li>
+            </ul>
+          </div>
+
+          <!-- Validation gates -->
+          <div class="al-card">
+            <div class="al-card-head">
+              <span class="al-card-step">Stage 02</span>
+              <span class="al-card-badge gate">Gate</span>
+            </div>
+            <div class="al-card-name">Staged validation</div>
+            <div class="al-card-desc">Four-stage pipeline. Each stage gates the next. Failures feed error context back to the originating agent for iterative refinement.</div>
+            <ul class="al-card-details">
+              <li class="ok">compile &mdash; GCC/Clang cross-build</li>
+              <li class="ok">sparse + smatch &mdash; static analysis</li>
+              <li class="ok">QEMU boot &mdash; module load + dmesg</li>
+              <li class="ok">lockdep + KASAN &mdash; runtime analysis</li>
+              <li class="fail">Failure at any stage &rarr; agent feedback loop</li>
+            </ul>
+          </div>
+
+          <!-- GMA -->
+          <div class="al-card">
+            <div class="al-card-head">
+              <span class="al-card-step">Stage 03</span>
+              <span class="al-card-badge agent">Agent</span>
+            </div>
+            <div class="al-card-name"><code>GMA</code> Global Migration Agent</div>
+            <div class="al-card-desc">Escalation path for complex cases. Full repository context, cross-file rewrites, iterative refinement with compiler and runtime feedback.</div>
+            <ul class="al-card-details">
+              <li class="metric"><strong>~25%</strong> of cases need GMA</li>
+              <li class="metric"><strong>5</strong> max iterations per feedback type</li>
+              <li>Classes 5&ndash;9: lifecycle, concurrency, security</li>
+              <li>Full tool access: grep, AST query, docs lookup</li>
+              <li class="ok">Converges or returns with diagnostics</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- animated progress bar -->
+        <div class="al-progress">
+          <div class="al-progress-bar"></div>
+          <div class="al-progress-pulse"></div>
+        </div>
+
+        <!-- summary stats -->
+        <div class="al-stats">
+          <div class="al-stat">
+            <div class="al-stat-n green">56%</div>
+            <div class="al-stat-l">Pass all 4 stages</div>
+          </div>
+          <div class="al-stat">
+            <div class="al-stat-n">100% &rarr; 89% &rarr; 78% &rarr; 56%</div>
+            <div class="al-stat-l">Compile &rarr; sparse &rarr; QEMU &rarr; full</div>
+          </div>
+          <div class="al-stat">
+            <div class="al-stat-n">$0.07 &ndash; $3.29</div>
+            <div class="al-stat-l">Cost per migration run</div>
+          </div>
+          <div class="al-stat">
+            <div class="al-stat-n">168s &ndash; 1185s</div>
+            <div class="al-stat-l">Execution time range</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- diff example -->
+    <div class="diff-wrap">
+      <div class="diff-inner">
+        <div class="diff-label">Example migration &mdash; ida_simple_get &rarr; ida_alloc deprecation</div>
+        <div class="diff-box">
+          <div class="diff-head">
+            <span class="diff-fname">drivers/net/ethernet/intel/e1000e/netdev.c</span>
+            <span class="diff-info">v5.10 &rarr; v6.1 &middot; API deprecation &middot; auto-generated</span>
+          </div>
+          <div class="diff-body">
+            <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -1247,8 +1247,8 @@ static int e1000_probe(struct pci_dev *pdev,</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> &nbsp; struct net_device *netdev;</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> &nbsp; struct e1000_adapter *adapter;</span></div>
+            <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">&nbsp; int id = ida_simple_get(&amp;e1000_ida, 0, 0, GFP_KERNEL);</span></div>
+            <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">&nbsp; int id = ida_alloc(&amp;e1000_ida, GFP_KERNEL);</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> &nbsp; if (id &lt; 0)</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> &nbsp; &nbsp; return id;</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc">&nbsp;</span></div>
+            <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -1389,3 +1389,3 @@ static void e1000_remove(struct pci_dev *pdev)</span></div>
+            <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">&nbsp; ida_simple_remove(&amp;e1000_ida, adapter-&gt;id);</span></div>
+            <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">&nbsp; ida_free(&amp;e1000_ida, adapter-&gt;id);</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> &nbsp; free_netdev(netdev);</span></div>
+            <div class="dl"><span class="ds ds-ctx">&nbsp;</span><span class="dc"> }</span></div>
+          </div>
+          <div class="diff-foot">
+            <span class="dfb">+2 additions</span>
+            <span class="dfb" style="color:var(--red)">-2 deletions</span>
+            <span class="dfb dfb-dim">Classification: deprecation &middot; Confidence: 0.97 &middot; Agent: LPA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 03 — RESULTS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="results">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">&sect; 03 &mdash; Results</div>
+        <div>
+          <h2 class="sh-title">Model comparison on DRIFTBENCH</h2>
+          <p class="sh-sub">
+            Five frontier LLMs evaluated on 71 kernel-driver migration cases.
+            Build success, AST similarity, and QEMU boot pass rate.
+          </p>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="padding-left:0;padding-right:0">
+        <div class="table-meta">
+          <span class="table-meta-l">DRIFTBENCH v1.0 &mdash; 71 migration cases</span>
+          <span class="table-meta-r">Staged validation &middot; 4 retries &middot; temperature 0</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Build success</th>
+              <th>AST similarity</th>
+              <th>Sparse clean</th>
+              <th>QEMU boot</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mn">Qwen3 Coder Plus</span></td>
+              <td class="bar-c">
+                <span>68.8%</span>
+                <span class="bar-t"><span class="bar-f g" style="width:68.8%"></span></span>
+              </td>
+              <td>84.2</td>
+              <td>62.5%</td>
+              <td>56.3%</td>
+            </tr>
+            <tr>
+              <td><span class="mn">Claude 3.7 Sonnet</span> <span class="mt">Best AST</span></td>
+              <td class="bar-c">
+                <span class="best">70.8%</span>
+                <span class="bar-t"><span class="bar-f g" style="width:70.8%"></span></span>
+              </td>
+              <td class="best">86.9</td>
+              <td>64.6%</td>
+              <td>58.3%</td>
+            </tr>
+            <tr>
+              <td><span class="mn">GPT-5 Codex</span></td>
+              <td class="bar-c">
+                <span>51.1%</span>
+                <span class="bar-t"><span class="bar-f" style="width:51.1%"></span></span>
+              </td>
+              <td>78.4</td>
+              <td>45.8%</td>
+              <td>39.6%</td>
+            </tr>
+            <tr>
+              <td><span class="mn">Gemini 2.5 Pro</span></td>
+              <td class="bar-c">
+                <span class="low">20.8%</span>
+                <span class="bar-t"><span class="bar-f d" style="width:20.8%"></span></span>
+              </td>
+              <td class="low">61.3</td>
+              <td class="low">16.7%</td>
+              <td class="low">12.5%</td>
+            </tr>
+            <tr>
+              <td><span class="mn">DeepSeek R1</span></td>
+              <td class="bar-c">
+                <span class="low">13.6%</span>
+                <span class="bar-t"><span class="bar-f d" style="width:13.6%"></span></span>
+              </td>
+              <td class="low">52.7</td>
+              <td class="low">10.4%</td>
+              <td class="low">8.3%</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-note">
+          All models evaluated with identical system prompts, 4-retry loop, and temperature 0.
+          AST similarity measured via GumTree edit distance on the generated patch vs. ground-truth
+          commit. QEMU boot tests run on defconfig x86_64 with the target module loaded.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 04 — ECOSYSTEM
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="ecosystem">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">&sect; 04 &mdash; Ecosystem</div>
+        <div>
+          <h2 class="sh-title">Three components, one mission</h2>
+          <p class="sh-sub">
+            An open tool, a public benchmark, and a family of fine-tuned models
+            — designed to work together or independently.
+          </p>
+        </div>
+      </div>
+
+      <div class="ecosystem">
+        <div class="eco">
+          <div class="eco-tag">Tool</div>
+          <div class="eco-name">KDRIFT</div>
+          <div class="eco-desc">
+            CLI tool and CI integration for automated kernel-driver migration. Detect
+            drift, generate patches, validate end-to-end. Plugs into existing build
+            systems and CI/CD pipelines.
+          </div>
+          <div class="eco-detail">
+            > Python + Rust core<br>
+            > GitHub Actions / GitLab CI<br>
+            > Configurable retry budget<br>
+            > JSON / SARIF output
+          </div>
+          <div class="eco-btn">
+            <a href="https://github.com/kdrift" class="btn-outline">View repository &rarr;</a>
+          </div>
+        </div>
+        <div class="eco">
+          <div class="eco-tag">Benchmark</div>
+          <div class="eco-name">DRIFTBENCH</div>
+          <div class="eco-desc">
+            Curated benchmark of 71 real kernel-driver migration cases spanning v5.10 to v6.10.
+            48 API migration cases plus 23 regression cases with ground-truth patches from
+            upstream commits.
+          </div>
+          <div class="eco-detail">
+            > 71 validated cases<br>
+            > Ground-truth from upstream<br>
+            > Reproducible eval harness<br>
+            > Leaderboard + submission API
+          </div>
+          <div class="eco-btn">
+            <a href="#" class="btn-outline">Explore dataset &rarr;</a>
+          </div>
+        </div>
+        <div class="eco">
+          <div class="eco-tag">Models</div>
+          <div class="eco-name">KERN <span>7B / 32B</span></div>
+          <div class="eco-desc">
+            Fine-tuned model family specialized for kernel code understanding and driver
+            migration. Trained on 50K+ kernel commits with migration-specific instruction
+            tuning and DPO alignment.
+          </div>
+          <div class="eco-detail">
+            > Based on Qwen3 Coder<br>
+            > 7B and 32B variants<br>
+            > Migration-specific LoRA<br>
+            > Apache 2.0 license
+          </div>
+          <div class="eco-btn">
+            <a href="#" class="btn-outline btn-soon">Coming Q3 2026</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FEATURES PREVIEW
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="features-preview">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">Features</div>
+        <div>
+          <h2 class="sh-title">What ships today</h2>
+          <p class="sh-sub">
+            Core capabilities available in the current beta release.
+            Each feature is designed to work standalone or as part of the full pipeline.
+          </p>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-n">01</div>
+          <div class="card-name">AST-Differential Analysis</div>
+          <div class="card-desc">
+            Semantic deltas, not line diffs. Compares abstract syntax trees across kernel
+            versions to identify meaningful API changes independent of formatting, comments,
+            or unrelated modifications.
+          </div>
+          <div class="card-tag">Detection</div>
+        </div>
+        <div class="card">
+          <div class="card-n">02</div>
+          <div class="card-name">9-Class Taxonomy</div>
+          <div class="card-desc">
+            Each detected change is categorized into one of nine migration classes that
+            condition the patch synthesis strategy — from trivial renames to complex
+            semantic realignments.
+          </div>
+          <div class="card-tag">Classification</div>
+        </div>
+        <div class="card">
+          <div class="card-n">03</div>
+          <div class="card-name">Two-Tier Agents</div>
+          <div class="card-desc">
+            LPA handles fast-path single-file patches. Complex multi-file cases escalate
+            to GMA with full repository context, cross-reference resolution, and subsystem
+            awareness.
+          </div>
+          <div class="card-tag">Migration</div>
+        </div>
+        <div class="card">
+          <div class="card-n">04</div>
+          <div class="card-name">Staged Validation</div>
+          <div class="card-desc">
+            Four-stage pipeline: compile, sparse static analysis, QEMU boot with module
+            loading, and runtime smoke tests. Each stage gates the next, with failure
+            feedback driving re-iteration.
+          </div>
+          <div class="card-tag">Validation</div>
+        </div>
+        <div class="card">
+          <div class="card-n">05</div>
+          <div class="card-name">CI/CD Integration</div>
+          <div class="card-desc">
+            Native GitHub Actions and GitLab CI support. Trigger migration checks on
+            upstream kernel releases, PRs, or scheduled scans. SARIF output for code
+            review integration.
+          </div>
+          <div class="card-tag">Integration</div>
+        </div>
+        <div class="card">
+          <div class="card-n">06</div>
+          <div class="card-name">linux-next Monitoring</div>
+          <div class="card-desc">
+            Proactive drift detection against linux-next. Get notified of breaking changes
+            before they land in a stable release — fix forward instead of catching up.
+          </div>
+          <div class="card-tag">Monitoring</div>
+        </div>
+      </div>
+
+      <div style="padding:24px 0 40px">
+        <a href="/features.html" style="font-family:var(--mono);font-size:12px;color:var(--text3);text-decoration:none;letter-spacing:0.04em;transition:color 0.15s">See all features &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 05 — ACCESS
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="access">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">&sect; 05 &mdash; Access</div>
+        <div>
+          <h2 class="sh-title">Open core, enterprise ready</h2>
+          <p class="sh-sub">
+            The research and tooling are open. Enterprise features layer on top
+            for teams that need CI/CD integration, vendor fork support, and SLA guarantees.
+          </p>
+        </div>
+      </div>
+
+      <div class="audience-inner" style="max-width:unset;margin:0">
+        <div class="aud">
+          <div class="aud-tag">Open source</div>
+          <div class="aud-title">Free forever</div>
+          <ul class="aud-list">
+            <li>KDRIFT CLI tool — detect, classify, migrate, validate</li>
+            <li>DRIFTBENCH dataset — 71 cases with ground truth</li>
+            <li>Evaluation harness — reproduce all paper results</li>
+            <li>Community support via GitHub Discussions</li>
+            <li>Apache 2.0 license</li>
+          </ul>
+          <a href="https://github.com/kdrift" class="btn-solid">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            Get started
+          </a>
+        </div>
+        <div class="aud">
+          <div class="aud-tag">Enterprise</div>
+          <div class="aud-title">For teams at scale</div>
+          <ul class="aud-list">
+            <li>CI/CD pipeline integration — GitHub Actions, GitLab CI, Jenkins</li>
+            <li>Vendor fork support — custom kernel trees, BSP branches</li>
+            <li>linux-next monitoring — proactive drift alerts</li>
+            <li>Priority support with SLA guarantees</li>
+            <li>Custom model fine-tuning on your driver codebase</li>
+            <li>On-premise deployment option</li>
+          </ul>
+          <a href="/contact.html" class="btn-green">Talk to us &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       BLOG PREVIEW
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="blog-preview">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">Blog</div>
+        <div>
+          <h2 class="sh-title">Latest from the team</h2>
+          <p class="sh-sub">
+            Technical deep-dives, benchmark analysis, and the business case for
+            automated kernel-driver migration.
+          </p>
+        </div>
+      </div>
+
+      <div class="blog-grid">
+        <a href="/blog/staged-validation.html" class="blog-post">
+          <div class="bp-meta">
+            <span class="bp-tag">Architecture</span>
+            <span class="bp-date">Mar 2026</span>
+          </div>
+          <div class="bp-title">Why Compiler Errors Are Not Enough</div>
+          <div class="bp-desc">
+            A clean build is necessary but not sufficient. We break down why KDRIFT uses
+            four validation stages — and how each catches a different class of regression
+            that the previous stage misses.
+          </div>
+          <div class="bp-read">Read &rarr;</div>
+        </a>
+        <a href="/blog/cost-of-delay.html" class="blog-post">
+          <div class="bp-meta">
+            <span class="bp-tag">Business</span>
+            <span class="bp-date">Mar 2026</span>
+          </div>
+          <div class="bp-title">The Cost of Delayed Kernel Upgrades</div>
+          <div class="bp-desc">
+            Teams that defer kernel rebases accumulate security debt, miss performance
+            gains, and eventually face a multi-month catch-up. We quantify the cost
+            and show how continuous migration changes the equation.
+          </div>
+          <div class="bp-read">Read &rarr;</div>
+        </a>
+        <div class="blog-post bp-subscribe">
+          <div class="bp-meta">
+            <span class="bp-tag">Newsletter</span>
+            <span class="bp-date">&nbsp;</span>
+          </div>
+          <div class="bp-title">Stay in the loop</div>
+          <div class="bp-desc">
+            Monthly updates on KDRIFT releases, DRIFTBENCH additions, and kernel
+            migration research. No spam.
+          </div>
+          <div style="margin-top:auto;padding-top:20px">
+            <div style="display:flex;gap:8px">
+              <input type="email" class="cf-input" placeholder="you@company.com" style="flex:1">
+              <button class="btn-solid" style="white-space:nowrap">Subscribe</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       § 07 — CONTACT
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="contact-wrap" id="contact">
+    <div class="contact-inner">
+      <div class="section-head" style="border-bottom:none;padding-bottom:24px">
+        <div class="sh-label">&sect; 07 &mdash; Contact</div>
+        <div>
+          <h2 class="sh-title">Get in touch</h2>
+          <p class="sh-sub">
+            Whether you're evaluating KDRIFT for your team or have questions about
+            the research — we'd like to hear from you.
+          </p>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <div class="cf-left">
+          <div class="cf-title">Let's talk kernel migration</div>
+          <div class="cf-sub">
+            We typically respond within 24 hours. For enterprise inquiries,
+            we can schedule a technical deep-dive with our engineering team.
+          </div>
+          <div class="cf-detail">
+            > Email: hello@kdrift.dev<br>
+            > GitHub: github.com/kdrift<br>
+            > Response time: &lt; 24h<br>
+            > Enterprise demo available
+          </div>
+        </div>
+        <form class="cf-right" action="#" method="post">
+          <input type="text" class="cf-input" placeholder="Name" required>
+          <input type="email" class="cf-input" placeholder="Email" required>
+          <input type="text" class="cf-input" placeholder="Company (optional)">
+          <textarea class="cf-input" placeholder="Tell us about your use case — kernel versions, driver count, timeline..." rows="5"></textarea>
+          <button type="submit" class="cf-submit">Send message &rarr;</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /.page -->
+
+</body>
+</html>

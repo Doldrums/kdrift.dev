@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — kdrift</title>
+<meta name="description" content="Get in touch with the KDRIFT team. Enterprise evaluation, research collaboration, open source support.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* PAGE */
+.page{min-height:100vh}
+
+/* PAGE HEADER */
+.page-header{border-bottom:1px solid var(--border);padding-top:48px}
+.page-header-inner{max-width:1100px;margin:0 auto;padding:64px 24px 48px}
+.hero-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:8px;animation:fadeup 0.45s ease forwards;opacity:0}
+.hero-label::before{content:'';width:20px;height:1px;background:var(--border3)}
+.page-header h1{font-size:clamp(30px,4.5vw,52px);font-weight:600;line-height:1.1;letter-spacing:-0.04em;margin-bottom:20px;max-width:700px;animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+.page-header p{font-size:15px;color:var(--text2);line-height:1.7;max-width:600px;font-weight:300;animation:fadeup 0.45s 0.12s ease forwards;opacity:0}
+
+/* SECTION */
+.section{border-top:1px solid var(--border)}
+.section-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.section-head{display:grid;grid-template-columns:200px 1fr;gap:48px;padding:48px 0 40px;border-bottom:1px solid var(--border)}
+.sh-label{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;padding-top:4px}
+.sh-title{font-size:clamp(22px,3vw,30px);font-weight:600;letter-spacing:-0.03em;line-height:1.15}
+.sh-sub{margin-top:12px;font-size:14px;color:var(--text2);line-height:1.65;max-width:560px;font-weight:300}
+
+/* CONTACT FORM */
+.contact-wrap{border-top:1px solid var(--border)}
+.contact-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.contact-form{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:0}
+.cf-left{background:var(--bg);padding:40px}
+.cf-right{background:var(--bg1);padding:40px;display:flex;flex-direction:column;gap:14px}
+.cf-title{font-size:20px;font-weight:600;letter-spacing:-0.03em;margin-bottom:8px}
+.cf-sub{font-size:13px;color:var(--text3);line-height:1.6;font-weight:300;margin-bottom:28px}
+.cf-detail{font-family:var(--mono);font-size:11px;color:var(--text4);line-height:1.9}
+.cf-input{background:var(--bg2);border:1px solid var(--border2);padding:10px 14px;font-family:var(--sans);font-size:13px;color:var(--text);width:100%;outline:none;transition:border-color 0.15s;-webkit-appearance:none;appearance:none;border-radius:0}
+.cf-input:focus{border-color:var(--border3)}
+.cf-input::placeholder{color:var(--text4)}
+select.cf-input{cursor:pointer}
+select.cf-input option{background:var(--bg2);color:var(--text)}
+textarea.cf-input{resize:vertical;min-height:100px;font-family:var(--sans)}
+.cf-submit{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);border:none;padding:10px 20px;cursor:pointer;letter-spacing:0.02em;transition:background 0.15s;text-align:left;width:fit-content}
+.cf-submit:hover{background:#ccc}
+
+/* CARDS GRID */
+.cards-grid{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-top:none}
+.cards-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--bg);padding:32px 28px;transition:background 0.2s}
+.card:hover{background:var(--bg2)}
+.card-n{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px}
+.card-name{font-size:15px;font-weight:500;letter-spacing:-0.02em;margin-bottom:10px}
+.card-desc{font-size:12px;color:var(--text3);line-height:1.65;font-weight:300}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none}
+.metric{background:var(--bg);padding:28px 28px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:0.06em;text-transform:uppercase}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+
+/* OFFICE HOURS TEXT */
+.office-text{padding:40px 0;font-size:14px;color:var(--text2);line-height:1.75;font-weight:300;max-width:700px}
+
+/* ANIMATIONS */
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* MOBILE */
+@media(max-width:768px){
+  .page-header-inner{padding:48px 16px 36px}
+  .section-head{grid-template-columns:1fr;gap:12px;padding:32px 0 24px}
+  .section-inner{padding:0 16px}
+  .sh-label{padding-top:0}
+  .contact-form{grid-template-columns:1fr}
+  .cf-left{padding:24px 16px}
+  .cf-right{padding:24px 16px}
+  .cards-grid.cols-4{grid-template-columns:1fr 1fr}
+  .metrics-grid{grid-template-columns:1fr}
+  .contact-inner{padding:0 16px}
+}
+@media(max-width:480px){
+  .cards-grid.cols-4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-page="contact">
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="hero-label">Contact</div>
+      <h1>Let's talk about your kernel maintenance</h1>
+      <p>Whether you're evaluating KDRIFT for your BSP, exploring research collaboration, or need enterprise support — we respond within one business day.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT FORM -->
+  <div class="contact-wrap">
+    <div class="contact-inner">
+      <div class="contact-form">
+        <div class="cf-left">
+          <div class="cf-title">Get in touch</div>
+          <div class="cf-sub">Tell us about your driver maintenance setup and we'll show you how KDRIFT fits.</div>
+          <div class="cf-detail">
+            For enterprise evaluation: describe your driver count, kernel version range, and CI setup.<br><br>
+            For research collaboration: include your institution and area of interest.<br><br>
+            For open source support: check GitHub Issues first, then reach out.<br><br>
+            Email: hello@kdrift.dev
+          </div>
+        </div>
+        <div class="cf-right">
+          <input type="text" class="cf-input" placeholder="Name">
+          <input type="email" class="cf-input" placeholder="Email">
+          <input type="text" class="cf-input" placeholder="Company / Institution">
+          <select class="cf-input">
+            <option value="" disabled selected>Interest</option>
+            <option value="enterprise">Enterprise evaluation</option>
+            <option value="research">Research collaboration</option>
+            <option value="opensource">Open source support</option>
+            <option value="press">Press / media</option>
+            <option value="other">Other</option>
+          </select>
+          <textarea class="cf-input" placeholder="Tell us about your use case"></textarea>
+          <button class="cf-submit">Send message →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 01 — OTHER WAYS TO REACH US -->
+  <div class="section">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">§ 01</div>
+        <div>
+          <div class="sh-title">Other ways to reach us</div>
+        </div>
+      </div>
+      <div class="cards-grid cols-4">
+        <div class="card">
+          <div class="card-n">01</div>
+          <div class="card-name">GitHub Discussions</div>
+          <div class="card-desc">Community Q&A, feature requests, bug reports.</div>
+        </div>
+        <div class="card">
+          <div class="card-n">02</div>
+          <div class="card-name">Email</div>
+          <div class="card-desc">hello@kdrift.dev — Direct line, 24h response.</div>
+        </div>
+        <div class="card">
+          <div class="card-n">03</div>
+          <div class="card-name">Schedule a Demo</div>
+          <div class="card-desc">30-min call to see KDRIFT on your drivers.</div>
+        </div>
+        <div class="card">
+          <div class="card-n">04</div>
+          <div class="card-name">Research Inquiry</div>
+          <div class="card-desc">Collaboration, dataset access, paper discussion.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 02 — OFFICE HOURS -->
+  <div class="section">
+    <div class="section-inner">
+      <div class="section-head">
+        <div class="sh-label">§ 02</div>
+        <div>
+          <div class="sh-title">Office hours</div>
+        </div>
+      </div>
+      <div class="office-text">
+        We hold open office hours every Thursday at 16:00 UTC on Discord. Bring your kernel migration questions — no appointment needed.
+      </div>
+      <div class="metrics-grid">
+        <div class="metric">
+          <div class="metric-n">24h</div>
+          <div class="metric-l">Response time</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n">Thursday 16:00 UTC</div>
+          <div class="metric-l">Office hours</div>
+        </div>
+        <div class="metric">
+          <div class="metric-n">1 business day</div>
+          <div class="metric-l">Enterprise SLA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
