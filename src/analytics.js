@@ -1,16 +1,11 @@
-import * as amplitude from '@amplitude/analytics-browser';
+import * as amplitude from '@amplitude/unified';
 
 const API_KEY = 'd8c9e9b38574250b38e77552d315463c';
 
 export function initAnalytics() {
-  amplitude.init(API_KEY, {
-    defaultTracking: {
-      sessions: true,
-      pageViews: false,
-      formInteractions: false,
-      fileDownloads: false,
-    },
-    autocapture: false,
+  amplitude.initAll(API_KEY, {
+    analytics: { autocapture: true },
+    sessionReplay: { sampleRate: 1 },
   });
 
   trackPageView();
