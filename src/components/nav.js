@@ -20,10 +20,10 @@ export function renderNav(activePage = '') {
     <a href="/" class="nav-logo">kdrift<span>.dev</span> <span class="badge">beta</span></a>
     <div class="nav-links">${navLinks}</div>
     <div class="nav-right">
-      <a href="https://github.com/kdrift" class="nav-pill">GitHub</a>
-      <a href="#" class="nav-pill">Paper</a>
+      <a href="https://github.com/kdrift-dev" class="nav-pill">GitHub</a>
+      <a href="https://arxiv.org/abs/2511.18924" class="nav-pill" target="_blank" rel="noopener">Paper</a>
       <a href="/contact.html" class="nav-solid">Talk to us</a>
-      <button class="nav-toggle" id="nav-toggle">Menu</button>
+      <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-mobile">Menu</button>
     </div>
   `;
 
@@ -32,15 +32,26 @@ export function renderNav(activePage = '') {
   mobile.id = 'nav-mobile';
   mobile.innerHTML = `
     ${mobileLinks}
-    <a href="https://github.com/kdrift">GitHub</a>
+    <a href="https://github.com/kdrift-dev">GitHub</a>
     <a href="/contact.html">Talk to us</a>
   `;
 
   document.body.prepend(mobile);
   document.body.prepend(nav);
 
-  document.getElementById('nav-toggle')?.addEventListener('click', () => {
-    document.getElementById('nav-mobile')?.classList.toggle('open');
+  const toggle = document.getElementById('nav-toggle');
+  const mobileNav = document.getElementById('nav-mobile');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = mobileNav?.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  mobileNav?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileNav.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    });
   });
 }
 

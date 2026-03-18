@@ -12,7 +12,18 @@ renderFooter();
 
 // animate metric numbers on scroll
 function animateCounters() {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const counters = document.querySelectorAll('[data-count]');
+
+  if (reducedMotion) {
+    counters.forEach(el => {
+      const suffix = el.dataset.suffix || '';
+      const prefix = el.dataset.prefix || '';
+      el.textContent = prefix + el.dataset.count + suffix;
+    });
+    return;
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
