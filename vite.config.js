@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
-  plugins: [cloudflare({ configPath: './wrangler.jsonc' })],
+  plugins: [cloudflare({ configPath: './wrangler.build.jsonc' })],
   root: '.',
   build: {
     rollupOptions: {
