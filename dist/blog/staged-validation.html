@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Compiler Errors Are Not Enough — kdrift blog</title>
+<meta name="description" content="A patch that compiles is not a patch that works. The case for staged validation in kernel driver migration.">
+<meta property="og:title" content="Why Compiler Errors Are Not Enough — kdrift blog">
+<meta property="og:description" content="A patch that compiles is not a patch that works. The case for staged validation in kernel driver migration.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://kdrift.dev/blog/staged-validation.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+
+/* PAGE */
+.page{min-height:100vh}
+
+/* ARTICLE */
+.article{max-width:720px;margin:0 auto;padding:120px 24px 80px}
+.article-meta{font-family:var(--mono);font-size:11px;color:var(--text4);letter-spacing:0.05em;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+.article-meta span{display:inline-flex;align-items:center;gap:6px}
+.article h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:24px}
+.article h2{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-top:48px;margin-bottom:16px;padding-top:24px;border-top:1px solid var(--border)}
+.article h3{font-size:16px;font-weight:500;letter-spacing:-0.01em;margin-top:32px;margin-bottom:12px}
+.article p{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:20px}
+.article p strong{color:var(--text);font-weight:500}
+.article ul,.article ol{margin-bottom:20px;padding-left:0;list-style:none}
+.article li{font-size:14px;color:var(--text2);line-height:1.7;font-weight:300;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.article li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0}
+.article blockquote{border-left:2px solid var(--border3);padding:16px 20px;margin:24px 0;background:var(--bg2)}
+.article blockquote p{font-size:14px;color:var(--text3);margin-bottom:0;font-style:italic}
+.article pre{background:var(--bg1);border:1px solid var(--border2);padding:20px 24px;margin:24px 0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text2)}
+.article .aside{font-family:var(--mono);font-size:11px;color:var(--text4);border-left:1px solid var(--border2);padding-left:12px;margin:24px 0;line-height:1.7}
+.article .aside a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border3);transition:color 0.15s}
+.article .aside a:hover{color:var(--text2)}
+
+/* DIFF BOX */
+.diff-box{background:var(--bg1);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;line-height:1.7;overflow:hidden;margin:24px 0}
+.diff-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.diff-fname{color:var(--text3);font-size:11px}
+.diff-info{color:var(--text4);font-size:10px;letter-spacing:0.04em}
+.diff-body{padding:4px 0}
+.dl{display:flex;padding:1px 16px}
+.dl-add{background:rgba(34,197,94,0.05)}
+.dl-rem{background:rgba(239,68,68,0.05)}
+.dl-hunk{background:rgba(96,165,250,0.04)}
+.ds{min-width:12px;margin-right:12px;flex-shrink:0}
+.ds-add{color:#22c55e}.ds-rem{color:#ef4444}.ds-ctx{color:#2a2a2a}.ds-hunk{color:#3b5a8a}
+.dc{color:#aaa}
+.dc-add{color:rgba(134,239,172,0.85)}
+.dc-rem{color:rgba(252,165,165,0.7)}
+.dc-hunk{color:#3b5a8a;font-style:italic}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:24px 0}
+.metric{background:var(--bg);padding:24px 20px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-n.green{color:var(--green)}
+.metric-n.dim{color:var(--text3)}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+.article-nav{display:flex;gap:12px;margin-top:48px;flex-wrap:wrap}
+
+/* ANIMATIONS */
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.article h1{animation:fadeup 0.45s ease forwards;opacity:0}
+.article-meta{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+
+/* MOBILE */
+@media(max-width:768px){
+  .article{padding:80px 16px 60px}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .metrics-grid{grid-template-columns:1fr}
+}
+</style>
+  <script type="module" crossorigin src="/assets/main-CqC0gVQ3.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-CZem5MDb.css">
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<div class="article">
+
+  <div class="article-meta">
+    <span>Architecture</span>
+    <span>Mar 14, 2026</span>
+    <span>8 min read</span>
+  </div>
+
+  <h1>Why Compiler Errors Are Not Enough: The Case for Staged Validation</h1>
+
+  <p>A patch that compiles is not a patch that works. This is a statement that most kernel developers would find obvious, yet the majority of automated code generation tools treat compilation success as their primary — and often only — measure of correctness. In the context of kernel driver migration, this gap between "compiles" and "correct" is not a minor inconvenience. It is the difference between a driver that loads and a driver that corrupts memory under load.</p>
+
+  <p>When KDRIFT generates a migration patch, that patch must survive <strong>four independent stages of validation</strong> before we consider it successful. Each stage catches a distinct class of bugs that the previous stages cannot detect. The attrition rate at each stage tells us something important about the nature of kernel code correctness.</p>
+
+  <p>This post walks through each stage, explains what it catches, and shows why skipping any one of them means shipping patches that pass the easiest test and hoping for the best.</p>
+
+  <h2>Stage 1 — Compilation</h2>
+
+  <p>The first stage is the one everyone knows. Run <strong>make</strong> with the appropriate defconfig and check the exit code. Compilation catches the obvious problems: syntax errors, missing symbols, type mismatches between function arguments and parameters, undeclared identifiers, and incompatible pointer types.</p>
+
+  <p>For a migration patch, compilation failure usually means the patch generator got the API signature wrong. Maybe it used the old function name, passed the wrong number of arguments, or forgot that a struct field was renamed. These are the low-hanging fruit of migration errors, and any competent code generation system should handle them.</p>
+
+  <p>But here is the critical point: <strong>compilation verifies syntax, not semantics</strong>. The compiler confirms that your code is well-formed according to the C language specification. It does not confirm that your code does what you intend. It does not check that you are holding the right lock when accessing shared data. It does not verify that your DMA buffer lifetime matches the hardware's access pattern. It does not know that the function you're calling now has different error return semantics than it did in the previous kernel version.</p>
+
+  <p>A patch that compiles cleanly is a patch that has cleared the lowest bar. In our data, <strong>100% of patches that reach Stage 2 compiled successfully</strong> — that is the entry condition. What happens next is where things get interesting.</p>
+
+  <h2>Stage 2 — Sparse + Smatch</h2>
+
+  <p>Sparse is a semantic checker for the Linux kernel, originally written by Linus Torvalds. Smatch is a static analysis tool built on top of Sparse that performs additional data flow analysis. Together, they catch a class of bugs that the compiler cannot see: <strong>lock ordering violations, null pointer dereferences, type confusion between kernel and user space pointers, and incorrect bitwise operations on endian-sensitive data</strong>.</p>
+
+  <p>The canonical example is <strong>__user annotation violations</strong>. The kernel uses type annotations to distinguish between pointers to user-space memory and pointers to kernel-space memory. The compiler treats both as plain pointers — they're the same type at the C level. But mixing them is a security vulnerability. Sparse catches this.</p>
+
+  <p>Consider a migration where an ioctl handler is updated. The old API passed a kernel-space buffer; the new API passes a __user pointer that must be copied with copy_from_user(). A naive migration might update the function signature but forget to add the copy:</p>
+
+  <div class="diff-box">
+    <div class="diff-head">
+      <span class="diff-fname">drivers/example/ioctl.c</span>
+      <span class="diff-info">sparse violation: incorrect __user handling</span>
+    </div>
+    <div class="diff-body">
+      <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -142,8 +142,8 @@ static long example_ioctl(struct file *f, unsigned int cmd, unsigned long arg)</span></div>
+      <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">    struct example_config *cfg = (struct example_config *)arg;</span></div>
+      <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">    dev->mode = cfg->mode;</span></div>
+      <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">    struct example_config __user *ucfg = (struct example_config __user *)arg;</span></div>
+      <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">    dev->mode = ucfg->mode;  /* BUG: direct dereference of __user pointer */</span></div>
+    </div>
+  </div>
+
+  <p>This compiles. The types are compatible at the C level. But Sparse flags it immediately: <strong>dereference of noderef expression</strong>. The correct patch would use copy_from_user() or get_user() to safely transfer the data. Without Sparse, this patch ships with a kernel information leak and a potential arbitrary write.</p>
+
+  <p>Smatch goes further. It tracks data flow across function boundaries to find null pointer dereferences after failed allocations, integer overflow in size calculations passed to kmalloc, and cases where error paths don't release resources. For migration patches, Smatch is particularly valuable when API changes alter error handling semantics — the kind of change where the return value type stays the same but its meaning shifts.</p>
+
+  <p>In our benchmark, <strong>11% of patches that compile cleanly are flagged by Sparse or Smatch</strong>. These are patches that would pass any test based purely on compilation. They would be deployed, and they would contain latent bugs ranging from information leaks to memory corruption.</p>
+
+  <h2>Stage 3 — QEMU Boot</h2>
+
+  <p>Static analysis reasons about code without executing it. Stage 3 does the opposite: it <strong>builds a complete kernel with the patched driver and boots it in QEMU</strong>. This catches a class of bugs that no static tool can detect — driver probe failures, resource conflicts, init ordering bugs, and device tree binding mismatches.</p>
+
+  <p>The setup is straightforward but carefully controlled. For each migration case in DRIFTBENCH, we maintain a minimal defconfig that enables the target driver and its dependencies. The kernel is compiled, loaded into a QEMU virtual machine with the appropriate machine type, and booted with an automated timeout. We capture the full dmesg output and parse it for errors.</p>
+
+  <p>What we're looking for at this stage is not subtle. We're looking for <strong>hard failures</strong>: the driver fails to probe, the kernel panics during init, a resource allocation fails because the new API requires a different registration order, or the module fails to load because a symbol dependency changed.</p>
+
+  <p>These failures are common in migrations that involve subsystem registration changes. For example, when the platform driver registration API changes how it handles deferred probing, a patch that updates the function call but doesn't adjust the probe return handling will compile fine, pass Sparse, and then fail to load the driver in a running kernel.</p>
+
+  <p>The QEMU stage also catches <strong>build system issues</strong> that don't manifest as compilation errors. A Kconfig dependency that changed between kernel versions can cause a driver to be silently excluded from the build. The compilation succeeds (the driver simply isn't compiled), but the QEMU boot reveals that the module is missing.</p>
+
+  <p>Stage 3 eliminates an additional <strong>11% of patches</strong> — patches that compiled, passed static analysis, and still contained bugs that only manifest at runtime.</p>
+
+  <h2>Stage 4 — Runtime (lockdep + KASAN)</h2>
+
+  <p>The final stage subjects the booted kernel to <strong>synthetic workload with dynamic analysis enabled</strong>. We enable CONFIG_PROVE_LOCKING (lockdep) and CONFIG_KASAN (Kernel Address Sanitizer) and then exercise the driver through its primary code paths.</p>
+
+  <p><strong>Lockdep</strong> is the kernel's lock dependency validator. It constructs a graph of all lock acquisitions at runtime and checks for potential deadlocks — not just actual deadlocks, but lock ordering violations that could deadlock under different scheduling conditions. A migration patch that changes lock acquisition order (because the new API requires calling a function that internally takes a lock) may never deadlock in testing but will deadlock in production under memory pressure.</p>
+
+  <p><strong>KASAN</strong> detects memory corruption at runtime: use-after-free, out-of-bounds access, double-free, and memory leaks. These bugs are particularly common in migrations that change object lifetime semantics. If the old API allocated and freed a buffer internally, but the new API requires the caller to manage the buffer, a patch that doesn't add the corresponding kfree() will leak memory on every call. Under sustained load, the system runs out of memory.</p>
+
+  <p>These are the bugs that <strong>only manifest under specific conditions</strong> — certain code paths, certain timing, certain workloads. A driver that boots cleanly and handles a single ioctl call correctly may corrupt memory on the thousandth call, or deadlock when two threads access it simultaneously. Without dynamic analysis under load, these bugs ship to production.</p>
+
+  <p>Stage 4 catches an additional <strong>22% of patches</strong> that survived all previous stages. These are patches that compile, pass static analysis, boot in a VM, and still contain correctness bugs.</p>
+
+  <h2>The Numbers</h2>
+
+  <p>Across DRIFTBENCH, here is the attrition at each stage when evaluating migration patches from frontier LLMs:</p>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-n green">100%</div>
+      <div class="metric-l">Compile</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">89%</div>
+      <div class="metric-l">Sparse clean</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">78%</div>
+      <div class="metric-l">QEMU boot</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n dim">56%</div>
+      <div class="metric-l">All stages</div>
+    </div>
+  </div>
+
+  <p>Read that from right to left: <strong>44% of patches that compile correctly contain bugs</strong> that are only caught by subsequent validation stages. Nearly half. If your migration tool only checks compilation, you are shipping patches with a coin-flip chance of containing latent bugs.</p>
+
+  <p>The distribution across stages is also informative. Stage 2 (static analysis) and Stage 3 (boot testing) each catch roughly the same proportion of bugs — about 11% of the total each. Stage 4 (dynamic analysis) catches twice as many as either of them alone. This suggests that <strong>the hardest bugs to detect are behavioral</strong>, not structural. They are about what the code does at runtime, not how it looks to a static tool.</p>
+
+  <p>This is consistent with our understanding of kernel API evolution. The changes that are hardest to migrate are not the ones that rename functions or change argument types. Those are easy — the compiler catches them immediately. The hard changes are the ones that alter behavioral contracts: error handling semantics, locking requirements, object lifetime expectations. These are the changes that pass compilation and static analysis but fail under load.</p>
+
+  <h2>Conclusion</h2>
+
+  <p>Staged validation is not optional. It is not a nice-to-have quality improvement. It is the minimum bar for generating kernel patches that you can trust. Without it, you are selecting for patches that pass the easiest test — compilation — and ignoring the 44% of cases where that test is insufficient.</p>
+
+  <p>The four stages form a <strong>funnel of increasing specificity</strong>. Compilation checks syntax. Static analysis checks local semantics. Boot testing checks system-level integration. Dynamic analysis checks behavioral correctness under load. Each stage is necessary because each checks something the others cannot.</p>
+
+  <p>When we evaluate KDRIFT's patch quality, we report the pass rate at the final stage, not the first. When we say 56% success, we mean 56% of patches survive compilation, static analysis, boot testing, and dynamic analysis. The patches that make it through are patches you can review with confidence that the mechanical correctness has been verified.</p>
+
+  <p>The remaining 44% are not failures. They are <strong>starting points</strong> — partial patches that human reviewers can refine with the knowledge of exactly which stage failed and why. That is a fundamentally different workflow than writing a migration patch from scratch.</p>
+
+  <div class="aside">
+    Next: read about <a href="/blog/semantic-realignment.html">semantic realignment</a> — the class of changes that pass all four stages but still introduce subtle behavioral regressions.
+  </div>
+
+  <div class="article-nav">
+    <a href="/blog/" class="btn-outline">&larr; All posts</a>
+    <a href="/blog/semantic-realignment.html" class="btn-solid">Next: Semantic Realignment &rarr;</a>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

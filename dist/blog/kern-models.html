@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KERN Models — kdrift blog</title>
+<meta name="description" content="Teaching LLMs why kernel APIs change, not just what changed. Domain-specific fine-tuning for kernel code migration.">
+<meta property="og:title" content="KERN Models — kdrift blog">
+<meta property="og:description" content="Teaching LLMs why kernel APIs change, not just what changed. Domain-specific fine-tuning for kernel code migration.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://kdrift.dev/blog/kern-models.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.page{min-height:100vh}
+
+/* ARTICLE */
+.article{max-width:720px;margin:0 auto;padding:120px 24px 80px}
+.article-meta{font-family:var(--mono);font-size:11px;color:var(--text4);letter-spacing:0.05em;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+.article-meta span{display:inline-flex;align-items:center;gap:6px}
+.article h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:24px}
+.article h2{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-top:48px;margin-bottom:16px;padding-top:24px;border-top:1px solid var(--border)}
+.article h3{font-size:16px;font-weight:500;letter-spacing:-0.01em;margin-top:32px;margin-bottom:12px}
+.article p{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:20px}
+.article p strong{color:var(--text);font-weight:500}
+.article ul,.article ol{margin-bottom:20px;padding-left:0;list-style:none}
+.article li{font-size:14px;color:var(--text2);line-height:1.7;font-weight:300;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.article li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0}
+.article blockquote{border-left:2px solid var(--border3);padding:16px 20px;margin:24px 0;background:var(--bg2)}
+.article blockquote p{font-size:14px;color:var(--text3);margin-bottom:0;font-style:italic}
+.article pre{background:var(--bg1);border:1px solid var(--border2);padding:20px 24px;margin:24px 0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text2)}
+.article .aside{font-family:var(--mono);font-size:11px;color:var(--text4);border-left:1px solid var(--border2);padding-left:12px;margin:24px 0;line-height:1.7}
+.article .aside a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border3);transition:color 0.15s}
+.article .aside a:hover{color:var(--text2)}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:24px 0}
+.metric{background:var(--bg);padding:24px 20px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-n.green{color:var(--green)}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+.metric-note{font-family:var(--mono);font-size:9px;color:var(--text4);margin-top:4px;line-height:1.5}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+.article-nav{display:flex;gap:12px;margin-top:48px;flex-wrap:wrap}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.article h1{animation:fadeup 0.45s ease forwards;opacity:0}
+.article-meta{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+
+@media(max-width:768px){
+  .article{padding:80px 16px 60px}
+  .metrics-grid{grid-template-columns:1fr}
+}
+</style>
+  <script type="module" crossorigin src="/assets/main-CqC0gVQ3.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-CZem5MDb.css">
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<div class="article">
+
+  <div class="article-meta">
+    <span>Research</span>
+    <span>Feb 14, 2026</span>
+    <span>9 min read</span>
+  </div>
+
+  <h1>KERN Models: Teaching LLMs Why Kernel APIs Change, Not Just What Changed</h1>
+
+  <p>Frontier models are surprisingly good at kernel code migration. Given a clear description of an API change and the driver source code, models like Claude 3.7 Sonnet and GPT-5 Codex can generate correct migration patches for a majority of syntactic change cases. But they are <strong>expensive and slow</strong>. A single GMA run with a frontier model costs ~$0.15 and takes ~45 seconds. For an enterprise maintaining hundreds of drivers across continuous kernel updates, this adds up fast.</p>
+
+  <p>KERN models are our answer: <strong>domain-specific models fine-tuned on kernel evolution trajectories</strong>. They are not general-purpose code models that happen to know some kernel code. They are models that understand the intent behind API changes — why a function was deprecated, what behavioral contract shifted, what the maintainer's reasoning was. This understanding, encoded through fine-tuning on rich training examples, enables them to generate correct migration patches at a fraction of the cost and latency of frontier models.</p>
+
+  <h2>Why Domain-Specific Models?</h2>
+
+  <p>General-purpose code models treat kernel code as "just code." They understand C syntax, function calls, pointer arithmetic, and control flow. But they miss kernel-specific patterns that are critical for correct migration:</p>
+
+  <ul>
+    <li><strong>Refcounting conventions:</strong> The kernel has multiple refcounting mechanisms (kref, refcount_t, atomic reference counts on specific objects). Each has different semantics for when the last reference is dropped. A model that doesn't understand these conventions will generate patches that leak references or trigger use-after-free bugs.</li>
+    <li><strong>GFP flag semantics:</strong> Memory allocation in the kernel uses GFP flags to specify context (can we sleep? are we in an interrupt handler? is this an atomic context?). Changing a GFP_KERNEL to GFP_ATOMIC — or vice versa — is never a trivial substitution. The correct flag depends on the calling context, which may span multiple function calls.</li>
+    <li><strong>RCU read-side critical sections:</strong> Read-Copy-Update is the kernel's primary mechanism for lock-free concurrent reads. Code inside an RCU read-side critical section has strict constraints — no sleeping, no blocking allocations, no calling functions that might schedule. A migration that moves code into or out of an RCU section must respect these constraints.</li>
+    <li><strong>Spinlock nesting rules:</strong> The kernel has strict rules about which locks can be held simultaneously and in what order. These rules are documented in lockdep annotations but are often implicit in the code itself. A migration that changes lock acquisition patterns must preserve the nesting order or risk deadlock.</li>
+  </ul>
+
+  <p>Frontier models can handle these patterns when given sufficient context (documentation, examples, explicit instructions). But this context consumption is exactly what makes them expensive. KERN models internalize these patterns during fine-tuning, so they don't need to be provided at inference time.</p>
+
+  <h2>Training Data — Evolution Trajectories</h2>
+
+  <p>The key insight behind KERN model training is that <strong>code pairs alone are insufficient</strong>. A training example that shows "old code" and "new code" teaches the model what changed, but not why. Without the "why," the model learns surface patterns that don't generalize to new API changes.</p>
+
+  <p>Each KERN training example is an <strong>evolution trajectory</strong> — a rich, multi-signal representation of a kernel API change and its consequences:</p>
+
+  <ul>
+    <li><strong>The kernel commit:</strong> The full diff that changed the API, including header modifications and any in-tree driver adaptations. This shows what changed at the code level.</li>
+    <li><strong>The commit message:</strong> Kernel commit messages are unusually detailed. They explain the motivation for the change, the problem being solved, and often describe the expected impact on drivers. This is the "why" signal.</li>
+    <li><strong>The documentation delta:</strong> Changes to kernel documentation (both in-code doc comments and Documentation/ files) that accompany the API change. These describe the new behavioral contract.</li>
+    <li><strong>The driver adaptation set:</strong> All in-tree drivers that were updated in response to the API change. This provides multiple examples of correct adaptation, showing the range of patterns that different drivers use to respond to the same API change.</li>
+  </ul>
+
+  <p>A single evolution trajectory might include 5-20 driver adaptations for the same API change. This is critical because different drivers use the same API in different ways, and the correct migration depends on the usage pattern. A model trained on multiple adaptations per API change learns to <strong>match the adaptation strategy to the usage context</strong>, not just to the API delta.</p>
+
+  <p>Our training corpus contains approximately <strong>12,000 evolution trajectories</strong> extracted from kernel versions v4.0 through v6.8. This covers 8 years of kernel evolution across all major subsystems. The trajectories are filtered for quality: each must have a clear API change, at least 2 in-tree driver adaptations, and a commit message that explains the motivation.</p>
+
+  <h2>LoRA + GRPO</h2>
+
+  <p>We fine-tune using <strong>LoRA (Low-Rank Adaptation)</strong> adapters on top of Qwen3-Coder at two scales: 7B and 32B parameters. LoRA is the practical choice for domain adaptation — it modifies a small fraction of the model's parameters while preserving the base model's general capabilities. This matters because KERN models still need to understand C, parse diffs, and generate syntactically valid patches. We don't want to lose those capabilities in pursuit of kernel-specific knowledge.</p>
+
+  <p>The training objective uses <strong>GRPO (Group Relative Policy Optimization)</strong>, a reinforcement learning method that optimizes model outputs against a reward signal. Unlike supervised fine-tuning (SFT), which trains the model to reproduce the golden patch exactly, GRPO rewards any patch that achieves the desired outcome. This is important because there are often multiple correct migrations for the same API change — different variable names, different ordering of operations, different decomposition of error handling. SFT penalizes valid alternatives; GRPO rewards them.</p>
+
+  <p>The training pipeline is:</p>
+
+  <ul>
+    <li><strong>Phase 1 — SFT warmup:</strong> Standard supervised fine-tuning on evolution trajectories for 2 epochs. This gives the model a strong prior on kernel migration patterns.</li>
+    <li><strong>Phase 2 — GRPO refinement:</strong> Reinforcement learning with the gradual reward signal (described below) for 1 epoch. This teaches the model to optimize for correctness, not just similarity to the golden patch.</li>
+  </ul>
+
+  <h2>Gradual Reward Signal</h2>
+
+  <p>Binary rewards are the obvious choice for code generation: does the patch compile (1) or not (0)? But binary rewards provide <strong>weak learning signal</strong>. A patch that fails compilation because of a single missing semicolon gets the same reward as a patch that is completely wrong. The model cannot distinguish "almost correct" from "completely wrong," which makes learning slow and unstable.</p>
+
+  <p>KERN models use a <strong>gradual reward signal</strong> that maps directly to KDRIFT's four-stage validation pipeline:</p>
+
+  <ul>
+    <li><strong>+0.25</strong> for passing Stage 1 (compilation). The patch is syntactically valid C that integrates with the kernel build system.</li>
+    <li><strong>+0.25</strong> for passing Stage 2 (Sparse clean). The patch has no static analysis violations — correct type annotations, no null pointer dereferences, proper __user handling.</li>
+    <li><strong>+0.25</strong> for passing Stage 3 (QEMU boot). The patched driver loads and probes successfully in a virtual machine.</li>
+    <li><strong>+0.25</strong> for AST similarity to the golden patch above a threshold. The patch achieves the same structural transformation as the reference solution.</li>
+  </ul>
+
+  <p>This gradual signal means a patch that compiles but fails Sparse gets a reward of 0.25. A patch that passes compilation and Sparse but fails QEMU boot gets 0.50. <strong>Partially correct patches provide proportional learning signal.</strong> The model learns that getting closer to correct is rewarded, even when the final result isn't perfect.</p>
+
+  <p>The choice to use AST similarity rather than a fourth validation stage (runtime analysis with lockdep/KASAN) for the final 0.25 is pragmatic. Runtime validation takes 30-60 seconds per case, which would make GRPO training prohibitively expensive (each training step requires generating and evaluating multiple candidate patches). AST similarity is computed in milliseconds and correlates strongly with runtime correctness — patches that are structurally similar to the golden reference almost always pass runtime validation.</p>
+
+  <h2>Early Results</h2>
+
+  <p>KERN models are in active development. The numbers below are from our current best checkpoints, evaluated on the DRIFTBENCH test split:</p>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-n green">52%</div>
+      <div class="metric-l">KERN-7B full pipeline</div>
+      <div class="metric-note">vs. 53% GPT-5 Codex</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n green">58%</div>
+      <div class="metric-l">KERN-32B full pipeline</div>
+      <div class="metric-note">vs. 61% Claude 3.7 Sonnet</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">1/40th</div>
+      <div class="metric-l">Cost vs. frontier</div>
+      <div class="metric-note">Local inference, no API</div>
+    </div>
+  </div>
+
+  <p><strong>KERN-7B matches GPT-5 Codex on DRIFTBENCH at 1/40th the inference cost.</strong> On an A100 GPU, KERN-7B processes a migration case in ~0.8 seconds, compared to ~2 seconds of API latency for GPT-5 Codex. The cost difference is entirely in compute: local inference on your own hardware versus per-token API pricing. For high-volume migration workloads (hundreds of drivers, continuous kernel tracking), this is the difference between viable and prohibitive.</p>
+
+  <p><strong>KERN-32B approaches Claude 3.7 Sonnet performance</strong>, reaching 58% full-pipeline success compared to Sonnet's 61%. The 3-point gap is concentrated in Class 5-9 (semantic) changes, where the larger context window and reasoning capabilities of frontier models still provide an edge. For syntactic changes (Classes 1-4), KERN-32B matches or slightly exceeds frontier model performance — the domain-specific training compensates for the smaller model size.</p>
+
+  <p>Both KERN models are <strong>significantly faster than frontier models</strong> for local inference scenarios. An enterprise with a dedicated A100 can process their entire driver set against a kernel upgrade in minutes, without sending proprietary driver code to an external API. This addresses a key concern for enterprises with confidential out-of-tree drivers — the code never leaves their infrastructure.</p>
+
+  <h2>What KERN Models Don't Replace</h2>
+
+  <p>KERN models are optimized for the <strong>LPA path</strong> — fast, template-conditioned generation for syntactic changes. They are not intended to replace frontier models in the GMA path, where tool use, iterative refinement, and deep reasoning are required. The two-tier architecture naturally accommodates this: KERN models power the fast path, frontier models power the deep path, and the escalation policy routes cases appropriately.</p>
+
+  <p>The practical deployment is a <strong>hybrid</strong>: KERN models handle 75% of cases locally at minimal cost, and frontier models handle the remaining 25% through the GMA with full tool access. This hybrid approach achieves near-frontier accuracy at a fraction of the cost, while keeping confidential code local for the majority of cases.</p>
+
+  <blockquote>
+    <p>KERN models are currently in development. Enterprise early access is available for teams maintaining 10+ out-of-tree drivers. Contact us to discuss your use case and get early access to KERN-7B.</p>
+  </blockquote>
+
+  <div class="aside">
+    The gradual reward signal is aligned with KDRIFT's validation pipeline. For details on the four stages, see <a href="/blog/staged-validation.html">Why Compiler Errors Are Not Enough</a>.
+  </div>
+
+  <div class="article-nav">
+    <a href="/blog/" class="btn-outline">&larr; All posts</a>
+    <a href="/blog/cost-of-delay.html" class="btn-solid">Next: The Cost of Delayed Kernel Upgrades &rarr;</a>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

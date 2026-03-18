@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPA vs GMA — kdrift blog</title>
+<meta name="description" content="When to use a fast-path agent and when to escalate. KDRIFT's two-tier agent architecture for kernel driver migration.">
+<meta property="og:title" content="LPA vs GMA — kdrift blog">
+<meta property="og:description" content="When to use a fast-path agent and when to escalate. KDRIFT's two-tier agent architecture for kernel driver migration.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://kdrift.dev/blog/lpa-vs-gma.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;
+  --bg1:#111;
+  --bg2:#161616;
+  --bg3:#1c1c1c;
+  --border:#222;
+  --border2:#2a2a2a;
+  --border3:#333;
+  --text:#e2e2e2;
+  --text2:#999;
+  --text3:#555;
+  --text4:#444;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --orange:#fb923c;
+  --sans:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.page{min-height:100vh}
+
+/* ARTICLE */
+.article{max-width:720px;margin:0 auto;padding:120px 24px 80px}
+.article-meta{font-family:var(--mono);font-size:11px;color:var(--text4);letter-spacing:0.05em;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+.article-meta span{display:inline-flex;align-items:center;gap:6px}
+.article h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:24px}
+.article h2{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-top:48px;margin-bottom:16px;padding-top:24px;border-top:1px solid var(--border)}
+.article h3{font-size:16px;font-weight:500;letter-spacing:-0.01em;margin-top:32px;margin-bottom:12px}
+.article p{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300;margin-bottom:20px}
+.article p strong{color:var(--text);font-weight:500}
+.article ul,.article ol{margin-bottom:20px;padding-left:0;list-style:none}
+.article li{font-size:14px;color:var(--text2);line-height:1.7;font-weight:300;padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:12px}
+.article li::before{content:'--';font-family:var(--mono);font-size:11px;color:var(--text4);flex-shrink:0}
+.article blockquote{border-left:2px solid var(--border3);padding:16px 20px;margin:24px 0;background:var(--bg2)}
+.article blockquote p{font-size:14px;color:var(--text3);margin-bottom:0;font-style:italic}
+.article pre{background:var(--bg1);border:1px solid var(--border2);padding:20px 24px;margin:24px 0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text2)}
+.article .aside{font-family:var(--mono);font-size:11px;color:var(--text4);border-left:1px solid var(--border2);padding-left:12px;margin:24px 0;line-height:1.7}
+.article .aside a{color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border3);transition:color 0.15s}
+.article .aside a:hover{color:var(--text2)}
+
+/* DIFF BOX */
+.diff-box{background:var(--bg1);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;line-height:1.7;overflow:hidden;margin:24px 0}
+.diff-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.diff-fname{color:var(--text3);font-size:11px}
+.diff-info{color:var(--text4);font-size:10px;letter-spacing:0.04em}
+.diff-body{padding:4px 0}
+.dl{display:flex;padding:1px 16px}
+.dl-add{background:rgba(34,197,94,0.05)}
+.dl-rem{background:rgba(239,68,68,0.05)}
+.dl-hunk{background:rgba(96,165,250,0.04)}
+.ds{min-width:12px;margin-right:12px;flex-shrink:0}
+.ds-add{color:#22c55e}.ds-rem{color:#ef4444}.ds-ctx{color:#2a2a2a}.ds-hunk{color:#3b5a8a}
+.dc{color:#aaa}
+.dc-add{color:rgba(134,239,172,0.85)}
+.dc-rem{color:rgba(252,165,165,0.7)}
+.dc-hunk{color:#3b5a8a;font-style:italic}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:24px 0}
+.metric{background:var(--bg);padding:24px 20px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:24px;font-weight:500;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+.metric-n.green{color:var(--green)}
+.metric-l{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
+
+/* BUTTONS */
+.btn-solid{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--text);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:background 0.15s;font-weight:500;letter-spacing:0.01em}
+.btn-solid:hover{background:#ccc}
+.btn-outline{font-family:var(--mono);font-size:12px;color:var(--text3);border:1px solid var(--border3);padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:0.01em}
+.btn-outline:hover{color:var(--text);border-color:var(--text3)}
+.article-nav{display:flex;gap:12px;margin-top:48px;flex-wrap:wrap}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.article h1{animation:fadeup 0.45s ease forwards;opacity:0}
+.article-meta{animation:fadeup 0.45s 0.06s ease forwards;opacity:0}
+
+@media(max-width:768px){
+  .article{padding:80px 16px 60px}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .metrics-grid{grid-template-columns:1fr}
+}
+</style>
+  <script type="module" crossorigin src="/assets/main-CqC0gVQ3.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-CZem5MDb.css">
+</head>
+<body data-page="blog">
+
+<div class="page">
+
+<div class="article">
+
+  <div class="article-meta">
+    <span>Engineering</span>
+    <span>Feb 21, 2026</span>
+    <span>7 min read</span>
+  </div>
+
+  <h1>LPA vs GMA: When to Use a Fast-Path Agent and When to Escalate</h1>
+
+  <p>Not all kernel API changes are equal. A simple deprecation — replacing ida_simple_get() with ida_alloc() — is a mechanical transformation. The function signature changed, the new name is known, and every call site needs the same update. A competent find-and-replace with type awareness could handle it.</p>
+
+  <p>Contrast that with a lifecycle reordering change, where the kernel modifies the order in which device resources are initialized and released. This affects multiple functions across multiple files in a driver, requires understanding the driver's resource management flow, and may demand restructuring error paths that were designed around the old initialization order.</p>
+
+  <p>These are fundamentally different tasks. Using the same approach for both is either wasteful (spending expensive compute on trivial changes) or insufficient (applying a shallow transformation to a deep problem). <strong>KDRIFT uses two agents optimized for different complexity levels</strong>, with an escalation policy that routes each case to the appropriate tier.</p>
+
+  <h2>The Local Patch Agent (LPA)</h2>
+
+  <p>The LPA is the fast path. It is <strong>template-conditioned, single-file scope, sub-second latency</strong>. It handles change classes 1 through 4 in the KDRIFT taxonomy: signature changes, return type changes, deprecation replacements, and struct field reshaping. These are the syntactic changes — the ones where the transformation can be determined from the API delta alone, without broader context.</p>
+
+  <p>The LPA's input is minimal: the change classification (one of 9 types), the AST delta between old and new API, and the driver source file to be patched. It does not have access to tools — no grep, no AST query, no documentation lookup. It works entirely from the information provided in its prompt, conditioned on transformation templates learned from thousands of kernel migration examples.</p>
+
+  <p>This constraint is deliberate. By limiting the LPA's scope and capabilities, we achieve two things: <strong>speed</strong> (no tool-use latency, no iterative refinement) and <strong>predictability</strong> (the output is a function of the input, with minimal variance across runs).</p>
+
+  <p>Here is a typical LPA case. The kernel deprecates ida_simple_get() in favor of ida_alloc(), changing the argument order:</p>
+
+  <div class="diff-box">
+    <div class="diff-head">
+      <span class="diff-fname">drivers/example/core.c</span>
+      <span class="diff-info">LPA patch — class 3 (deprecation)</span>
+    </div>
+    <div class="diff-body">
+      <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -234,7 +234,7 @@ static int example_probe(struct platform_device *pdev)</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    struct example_dev *edev;</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    int id, ret;</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc"> </span></div>
+      <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">    id = ida_simple_get(&amp;example_ida, 0, 0, GFP_KERNEL);</span></div>
+      <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">    id = ida_alloc(&amp;example_ida, GFP_KERNEL);</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    if (id &lt; 0)</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">        return id;</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc"> </span></div>
+      <div class="dl dl-hunk"><span class="ds ds-hunk">@@</span><span class="dc dc-hunk"> -298,7 +298,7 @@ static void example_remove(struct platform_device *pdev)</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    struct example_dev *edev = platform_get_drvdata(pdev);</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc"> </span></div>
+      <div class="dl dl-rem"><span class="ds ds-rem">-</span><span class="dc dc-rem">    ida_simple_remove(&amp;example_ida, edev->id);</span></div>
+      <div class="dl dl-add"><span class="ds ds-add">+</span><span class="dc dc-add">    ida_free(&amp;example_ida, edev->id);</span></div>
+      <div class="dl"><span class="ds ds-ctx"> </span><span class="dc">    kfree(edev);</span></div>
+    </div>
+  </div>
+
+  <p>This is a clean, mechanical transformation. The LPA identifies both ida_simple_get() and ida_simple_remove() call sites, maps them to their replacements (ida_alloc() and ida_free()), adjusts the arguments to match the new signatures, and generates the patch. Total time: <strong>0.3 seconds</strong>. The patch compiles, passes Sparse, boots in QEMU, and matches the golden reference.</p>
+
+  <p>The LPA resolves approximately <strong>75% of all DRIFTBENCH cases</strong>. This is not surprising — the majority of kernel API changes are syntactic in nature. Renaming, argument reordering, deprecation of convenience wrappers, and struct field movement account for the bulk of API evolution. These changes are frequent, predictable, and well-suited to template-conditioned generation.</p>
+
+  <h2>The Global Migration Agent (GMA)</h2>
+
+  <p>The GMA is the deep path. It handles change classes 5 through 9: <strong>lifecycle ordering, concurrency and locking, error handling semantics, security and permissions, and cross-subsystem changes</strong>. These are the semantic changes — the ones where understanding the behavioral shift is as important as understanding the syntactic delta.</p>
+
+  <p>Unlike the LPA, the GMA has <strong>full tool access</strong>:</p>
+
+  <ul>
+    <li><strong>grep:</strong> Search the kernel source tree for usage patterns, related API calls, and precedent adaptations in other drivers.</li>
+    <li><strong>AST query:</strong> Structured queries over the driver's abstract syntax tree — find all callers of a function, trace data flow through a variable, identify lock acquisition patterns.</li>
+    <li><strong>Documentation lookup:</strong> Access kernel documentation for the affected API, including both the old and new versions, commit messages, and mailing list discussions.</li>
+    <li><strong>Compiler feedback:</strong> Iteratively compile the patched driver and use error messages to refine the patch.</li>
+  </ul>
+
+  <p>The GMA's workflow is iterative. It starts by analyzing the API change in depth — reading the commit message, comparing the old and new implementation, examining how other in-tree drivers adapted. It then generates an initial patch, compiles it, analyzes any errors, and refines. This loop runs for <strong>up to 5 iterations</strong> before the agent returns its best result.</p>
+
+  <p>The iterative approach is necessary because semantic changes often have non-obvious consequences. A locking change might require moving a function call outside a critical section, which requires restructuring the error handling, which requires changes to how resources are released. The GMA discovers these cascading requirements through the compile-refine loop — each compilation attempt reveals the next layer of adaptation needed.</p>
+
+  <h2>The Escalation Policy</h2>
+
+  <p>Every migration case starts with the LPA. The LPA is cheap and fast, and it handles the majority of cases correctly. The escalation policy is simple:</p>
+
+  <ul>
+    <li><strong>LPA generates a patch.</strong> If Stage 1 (compilation) passes, the patch proceeds through the remaining validation stages. If it passes all stages, the case is resolved.</li>
+    <li><strong>If compilation fails after LPA patch</strong>, the case is escalated to the GMA. The GMA receives the full context: the original driver, the API change, the change classification, and the LPA's failed attempt with the compiler error output.</li>
+    <li><strong>The LPA's failed attempt is informative.</strong> It tells the GMA what was tried and why it didn't work. The GMA uses this to avoid repeating the same mistakes and to understand what additional context is needed.</li>
+  </ul>
+
+  <p>This two-tier design means <strong>75% of cases never need the expensive agent</strong>. The GMA is only invoked for the 25% of cases where the LPA's limited context is insufficient. And when the GMA does run, it has the benefit of the LPA's failed attempt as additional signal.</p>
+
+  <p>There is a subtlety here: the escalation trigger is currently compilation failure only. Cases where the LPA patch compiles but fails at later validation stages (Sparse, QEMU, runtime) are not currently escalated — they are reported as partial successes with diagnostic information. This is a deliberate design choice. The GMA's strength is in understanding complex API changes, not in debugging runtime behavior. We find that patches which compile but fail later stages are often close to correct and benefit more from human review than from additional agent iterations.</p>
+
+  <h2>Cost and Latency Tradeoffs</h2>
+
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="metric-n green">~0.3s</div>
+      <div class="metric-l">LPA latency</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">~45s</div>
+      <div class="metric-l">GMA average</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n green">$0.002</div>
+      <div class="metric-l">LPA cost/run</div>
+    </div>
+    <div class="metric">
+      <div class="metric-n">$0.15</div>
+      <div class="metric-l">GMA cost/run</div>
+    </div>
+  </div>
+
+  <p>The cost differential is significant. The LPA runs in <strong>~0.3 seconds at ~$0.002 per run</strong>. It uses a single model call with a compact prompt — the classification, the AST delta, and the driver source. No tool use, no iteration, no multi-turn conversation.</p>
+
+  <p>The GMA runs in <strong>~45 seconds on average at ~$0.15 per run</strong>. It makes multiple model calls (initial analysis, patch generation, up to 5 compile-refine iterations), uses tools (grep, AST query), and processes significantly more context (kernel documentation, commit history, related driver adaptations).</p>
+
+  <p>The two-tier design reduces average cost by approximately <strong>4x compared to always using GMA</strong>. For a team maintaining 20 drivers across a kernel upgrade with 50 API changes, the difference is meaningful: ~$2 for the two-tier approach versus ~$150 for GMA-only. More importantly, the LPA's sub-second latency means the 75% of cases it handles are resolved faster than a developer can context-switch to review them.</p>
+
+  <p>The GMA's 45-second average includes considerable variance. Simple escalation cases (where the LPA was close but missed a secondary change) resolve in 10-15 seconds. Complex cross-subsystem changes can take the full 5-iteration budget, running up to 2 minutes. The 45-second average reflects the mix of case complexity within the escalation pool.</p>
+
+  <h2>Throughput</h2>
+
+  <p>For practical migration workflows, the throughput numbers that matter are:</p>
+
+  <ul>
+    <li><strong>LPA-only path:</strong> ~200 migrations/minute. Suitable for batch processing of a kernel upgrade's API changes.</li>
+    <li><strong>Mixed path (LPA + escalation):</strong> ~12 migrations/minute average. Dominated by the GMA cases, which are ~25% of the total but consume ~95% of the compute.</li>
+    <li><strong>GMA-only path:</strong> ~1.3 migrations/minute. Only relevant if every case requires deep analysis.</li>
+  </ul>
+
+  <p>In practice, a typical kernel upgrade (v6.8 to v6.9) with 30-50 affected API changes for a given driver set completes in <strong>under 5 minutes</strong> end-to-end using the two-tier approach. This includes classification, LPA attempts, GMA escalation for failures, and full four-stage validation for all generated patches. The output is a set of reviewed, validated patches ready for human review — not raw model outputs that need manual verification.</p>
+
+  <div class="aside">
+    For details on how LPA and GMA handle semantic changes differently, see <a href="/blog/semantic-realignment.html">Semantic Realignment</a>.
+  </div>
+
+  <div class="article-nav">
+    <a href="/blog/" class="btn-outline">&larr; All posts</a>
+    <a href="/blog/kern-models.html" class="btn-solid">Next: KERN Models &rarr;</a>
+  </div>
+
+</div>
+
+</div>
+
+</body>
+</html>

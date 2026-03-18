@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Features — kdrift</title>
+<meta name="description" content="From API drift detection to QEMU boot validation. Every stage of kernel driver migration, automated by kdrift.">
+<meta property="og:title" content="Features — kdrift">
+<meta property="og:description" content="From API drift detection to QEMU boot validation. Every stage of kernel driver migration, automated.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kdrift.dev/features.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d0d0d'/><text x='4' y='24' font-family='monospace' font-size='20' fill='%2322c55e'>k</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/main-CqC0gVQ3.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-CZem5MDb.css">
+</head>
+<body data-page="features">
+<div class="page">
+
+<!-- ── PAGE HEADER ──────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="hero-label">Features</div>
+    <h1>Every stage of kernel migration, automated</h1>
+    <p>From API drift detection to QEMU boot validation. A closed-loop system that handles routine changes in sub-second latency and escalates complex rewrites to a global agent.</p>
+  </div>
+</div>
+
+<!-- ── § 01 — DETECTION ────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">01 — Detection</div>
+      <div>
+        <div class="sh-title">AST-Differential Analysis</div>
+        <div class="sh-sub">kdrift reconstructs abstract syntax trees across commit ranges to compute semantic deltas. Instead of diffing lines, it understands what actually changed in the API surface.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="metrics-grid cols-3">
+      <div class="metric">
+        <div class="metric-n">Function</div>
+        <div class="metric-l">Granularity</div>
+        <div class="metric-note">Signature, body, and call-site tracking per function</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Struct</div>
+        <div class="metric-l">Field tracking</div>
+        <div class="metric-note">Field additions, removals, type changes, reordering</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n">Cross-file</div>
+        <div class="metric-l">Dependency mapping</div>
+        <div class="metric-note">Tracks impact across headers, subsystems, and modules</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:40px">
+    <div class="hero-term">
+      <div class="term-topbar">
+        <span class="tdot td1"></span>
+        <span class="tdot td2"></span>
+        <span class="tdot td3"></span>
+      </div>
+      <div class="term-body">
+        <div class="tl"><span class="t-p">$</span><span class="t-c">kdrift check <span class="t-path">drivers/net/e1000e/</span> <span class="t-flag">--from</span> v5.10 <span class="t-flag">--to</span> v6.10</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-ok">&nbsp; ● Scanning</span><span class="t-dim"> 847 commits across 23 files...</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-dim">&nbsp; Detected changes:</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp; </span><span class="t-ok">12</span><span class="t-dim"> signature changes</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="t-ok">4</span><span class="t-dim"> deprecations (symbol → successor mapped)</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="t-ok">7</span><span class="t-dim"> behavioral changes (lock ordering, error paths)</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="t-ok">3</span><span class="t-dim"> struct reshapes (field additions in netdev_priv)</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-ok">&nbsp; ✓ 26 changes classified</span><span class="t-dim"> — 19 LPA, 7 GMA</span></div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--text3);line-height:1.7;font-weight:300;margin-top:24px;max-width:700px">
+      Line-level diffs are insufficient for kernel migration. They miss semantic context — they cannot distinguish a parameter reordering from a behavioral change, or detect that a removed function has a designated successor. AST differencing captures the structural meaning of every change.
+    </p>
+  </div>
+</div>
+
+<!-- ── § 02 — CLASSIFICATION ───────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">02 — Classification</div>
+      <div>
+        <div class="sh-title">9-Class Change Taxonomy</div>
+        <div class="sh-sub">Every detected change is classified into one of nine categories, each with a defined migration strategy and agent assignment. This taxonomy determines whether a change is handled locally or escalated.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-bottom:0">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-n">Class 01</div>
+        <div class="card-name">Signature Change</div>
+        <div class="card-desc">Parameter additions, removals, or reordering. The most common change type — typically mechanical and fully automatable.</div>
+        <div class="card-tag">LPA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 02</div>
+        <div class="card-name">Return Type Change</div>
+        <div class="card-desc">Modified return semantics, including type changes and new error-code conventions that propagate through call chains.</div>
+        <div class="card-tag">LPA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 03</div>
+        <div class="card-name">Deprecation</div>
+        <div class="card-desc">Symbol replaced by a designated successor API. kdrift maps old-to-new and generates the replacement call with adapted arguments.</div>
+        <div class="card-tag">LPA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 04</div>
+        <div class="card-name">Struct Reshape</div>
+        <div class="card-desc">Field additions, removals, and type changes in kernel data structures. Requires updating all access sites and initializers.</div>
+        <div class="card-tag">LPA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 05</div>
+        <div class="card-name">Lifecycle Reorder</div>
+        <div class="card-desc">Init and teardown sequence changes. Probe/remove ordering shifts that can cause resource leaks or null dereferences if missed.</div>
+        <div class="card-tag">GMA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 06</div>
+        <div class="card-name">Concurrency Model</div>
+        <div class="card-desc">Lock ordering changes, spinlock-to-mutex conversions, new atomicity requirements. Incorrect migration causes deadlocks.</div>
+        <div class="card-tag">GMA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 07</div>
+        <div class="card-name">Error Handling</div>
+        <div class="card-desc">New error paths, stricter validation, changed errno conventions. Requires tracing all callers to propagate correctly.</div>
+        <div class="card-tag">GMA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 08</div>
+        <div class="card-name">Security Hardening</div>
+        <div class="card-desc">Refcounting discipline, bounds checks, access control enforcement. Failing to adopt these creates exploitable vulnerabilities.</div>
+        <div class="card-tag">GMA</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Class 09</div>
+        <div class="card-name">Cross-Subsystem</div>
+        <div class="card-desc">Changes spanning multiple kernel subsystems — e.g., a networking API change that also affects power management hooks.</div>
+        <div class="card-tag">GMA</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── § 03 — MIGRATION ────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">03 — Migration</div>
+      <div>
+        <div class="sh-title">Two-Tier Agent Architecture</div>
+        <div class="sh-sub">Routine changes are resolved instantly by the Local Patch Agent. Complex rewrites are escalated to the Global Migration Agent with full tool access and iterative refinement.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="cards-grid cols-2">
+      <div class="card">
+        <div class="card-icon">LPA</div>
+        <div class="card-n">Local Patch Agent</div>
+        <div class="card-name">Fast, template-conditioned patches</div>
+        <div class="card-desc">Handles classes 1-4 (signature changes, return types, deprecations, struct reshapes). Sub-second latency, no external tool access needed. Template-conditioned generation produces deterministic, correct patches for mechanical changes. Resolves approximately 75% of all detected changes.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">GMA</div>
+        <div class="card-n">Global Migration Agent</div>
+        <div class="card-name">Iterative, cross-file rewrites</div>
+        <div class="card-desc">Handles classes 5-9 (lifecycle, concurrency, error handling, security, cross-subsystem). Full tool access including compiler, sparse, and QEMU. Iterative refinement with up to 5 attempts, each informed by the previous failure. Handles the hardest 25% of changes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="al-wrap">
+      <div class="al-flow">
+        <div class="al-card">
+          <div class="al-card-head"><span class="al-card-step">Stage 01</span><span class="al-card-badge agent">Agent</span></div>
+          <div class="al-card-name"><code>LPA</code> Local Patch Agent</div>
+          <div class="al-card-desc">Template-conditioned single-file patching. No tool access needed. Resolves ~75% of cases at sub-second latency.</div>
+          <ul class="al-card-details">
+            <li class="metric"><strong>&lt;1s</strong> latency</li>
+            <li>Classes 1&ndash;4: signature, return, deprecation, struct</li>
+            <li class="fail">On failure &rarr; retry 3x with compiler feedback</li>
+          </ul>
+        </div>
+        <div class="al-card">
+          <div class="al-card-head"><span class="al-card-step">Stage 02</span><span class="al-card-badge gate">Gate</span></div>
+          <div class="al-card-name">Staged validation</div>
+          <div class="al-card-desc">Four-stage pipeline gating every patch. Failures feed back to the originating agent.</div>
+          <ul class="al-card-details">
+            <li class="ok">compile &mdash; GCC/Clang</li>
+            <li class="ok">sparse + smatch &mdash; static analysis</li>
+            <li class="ok">QEMU boot &mdash; module load</li>
+            <li class="ok">lockdep + KASAN &mdash; runtime</li>
+          </ul>
+        </div>
+        <div class="al-card">
+          <div class="al-card-head"><span class="al-card-step">Stage 03</span><span class="al-card-badge agent">Agent</span></div>
+          <div class="al-card-name"><code>GMA</code> Global Migration Agent</div>
+          <div class="al-card-desc">Escalation for cross-file semantic rewrites. Full tool access, iterative refinement.</div>
+          <ul class="al-card-details">
+            <li class="metric"><strong>5</strong> max iterations</li>
+            <li>Classes 5&ndash;9: lifecycle, concurrency, security</li>
+            <li class="ok">Converges or returns diagnostics</li>
+          </ul>
+        </div>
+      </div>
+      <div class="al-progress"><div class="al-progress-bar"></div><div class="al-progress-pulse"></div></div>
+      <div class="al-stats">
+        <div class="al-stat"><div class="al-stat-n green">75%</div><div class="al-stat-l">LPA resolution rate</div></div>
+        <div class="al-stat"><div class="al-stat-n">&lt;1s</div><div class="al-stat-l">LPA latency</div></div>
+        <div class="al-stat"><div class="al-stat-n">5</div><div class="al-stat-l">Max GMA iterations</div></div>
+        <div class="al-stat"><div class="al-stat-n green">3.2x</div><div class="al-stat-l">Faster than manual</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:40px">
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-n green" data-count="75" data-suffix="%">0%</div>
+        <div class="metric-l">LPA resolution</div>
+        <div class="metric-note">Patches resolved without escalation</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green" data-count="1" data-prefix="<" data-suffix="s">0s</div>
+        <div class="metric-l">LPA latency</div>
+        <div class="metric-note">Sub-second template generation</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" data-count="5">0</div>
+        <div class="metric-l">Max GMA iterations</div>
+        <div class="metric-note">Each informed by prior failure</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green" data-count="3.2" data-suffix="x">0x</div>
+        <div class="metric-l">Faster than manual</div>
+        <div class="metric-note">End-to-end migration time</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── § 04 — VALIDATION ───────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">04 — Validation</div>
+      <div>
+        <div class="sh-title">Staged Pipeline</div>
+        <div class="sh-sub">Every generated patch passes through four validation stages. Each stage catches a distinct class of defect that the previous stage cannot detect.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="pipeline">
+      <div class="ps">
+        <div class="ps-n">Stage 1</div>
+        <div class="ps-name">Compile</div>
+        <div class="ps-desc">GCC/Clang cross-compilation</div>
+        <div class="ps-tag">Syntax &amp; Symbols</div>
+      </div>
+      <div class="ps">
+        <div class="ps-n">Stage 2</div>
+        <div class="ps-name">Sparse + Smatch</div>
+        <div class="ps-desc">Static analysis pass</div>
+        <div class="ps-tag">Lock &amp; Type Safety</div>
+      </div>
+      <div class="ps">
+        <div class="ps-n">Stage 3</div>
+        <div class="ps-name">QEMU Boot</div>
+        <div class="ps-desc">Full kernel boot with driver</div>
+        <div class="ps-tag">Init &amp; Probe</div>
+      </div>
+      <div class="ps">
+        <div class="ps-n">Stage 4</div>
+        <div class="ps-name">Runtime</div>
+        <div class="ps-desc">lockdep + KASAN under load</div>
+        <div class="ps-tag">Memory &amp; Deadlocks</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="cards-grid cols-2">
+      <div class="card">
+        <div class="card-n">Stage 1 — Compile</div>
+        <div class="card-name">GCC/Clang Cross-Compilation</div>
+        <div class="card-desc">Catches syntax errors, missing symbols, type mismatches, and undeclared identifiers. The first gate ensures the patch produces a valid object file. Every patch must compile cleanly on both GCC and Clang before proceeding.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Stage 2 — Sparse + Smatch</div>
+        <div class="card-name">Static Analysis</div>
+        <div class="card-desc">Catches lock ordering violations, null pointer paths, type confusion, and address space mismatches that compile but are semantically wrong. Finds defects invisible to the compiler.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Stage 3 — QEMU Boot</div>
+        <div class="card-name">Full Kernel Boot</div>
+        <div class="card-desc">Boots a complete kernel with the driver loaded in QEMU. Catches init failures, probe errors, resource conflicts, and incorrect registration sequences that only manifest at runtime during module loading.</div>
+      </div>
+      <div class="card">
+        <div class="card-n">Stage 4 — Runtime</div>
+        <div class="card-name">lockdep + KASAN</div>
+        <div class="card-desc">Dynamic analysis under synthetic load with lockdep (deadlock detection) and KASAN (memory sanitizer) enabled. Catches memory corruption, use-after-free, double-free, and lock inversion that only appear under concurrent access.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:40px">
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-n green" data-count="100" data-suffix="%">0%</div>
+        <div class="metric-l">Compile</div>
+        <div class="metric-note">All patches compile cleanly</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green" data-count="89" data-suffix="%">0%</div>
+        <div class="metric-l">Pass sparse</div>
+        <div class="metric-note">Static analysis clean</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" data-count="78" data-suffix="%">0%</div>
+        <div class="metric-l">QEMU boot</div>
+        <div class="metric-note">Successful kernel boot with driver</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n" data-count="56" data-suffix="%">0%</div>
+        <div class="metric-l">All 4 stages</div>
+        <div class="metric-note">Full pipeline pass rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── § 05 — CI/CD INTEGRATION ────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">05 — CI/CD</div>
+      <div>
+        <div class="sh-title">CI/CD Integration</div>
+        <div class="sh-sub">Drop kdrift into your existing pipeline. Native support for GitHub Actions and GitLab CI, with a CLI fallback for any environment.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="hero-term">
+      <div class="term-topbar">
+        <span class="tdot td1"></span>
+        <span class="tdot td2"></span>
+        <span class="tdot td3"></span>
+      </div>
+      <div class="term-body">
+        <div class="tl"><span class="t-dim"># .github/workflows/kdrift.yml</span></div>
+        <div class="tl"><span class="t-c">name: <span class="t-path">kdrift migration check</span></span></div>
+        <div class="tl"><span class="t-c">on:</span></div>
+        <div class="tl"><span class="t-c">&nbsp; schedule:</span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp; - cron: <span class="t-path">'0 6 * * 1'</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp; workflow_dispatch:</span></div>
+        <div class="tl"><span class="t-c">jobs:</span></div>
+        <div class="tl"><span class="t-c">&nbsp; migrate:</span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp; runs-on: <span class="t-path">ubuntu-latest</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp; steps:</span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - uses: <span class="t-path">actions/checkout@v4</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - uses: <span class="t-path">kdrift/action@v1</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with:</span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drivers: <span class="t-path">drivers/net/e1000e/</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; target: <span class="t-path">v6.10</span></span></div>
+        <div class="tl"><span class="t-c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; validate: <span class="t-flag">full</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:40px">
+    <div class="cards-grid cols-4">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-name">GitHub Actions</div>
+        <div class="card-desc">First-class action with scheduled and on-demand triggers. Auto-creates PRs with migration patches.</div>
+        <div class="card-tag">Native</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙</div>
+        <div class="card-name">GitLab CI</div>
+        <div class="card-desc">Template include for .gitlab-ci.yml. Supports merge request pipelines and scheduled scans.</div>
+        <div class="card-tag">Native</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⛏</div>
+        <div class="card-name">Jenkins</div>
+        <div class="card-desc">Pipeline library with Jenkinsfile integration. Tested with declarative and scripted pipelines.</div>
+        <div class="card-tag">Plugin</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">▸</div>
+        <div class="card-name">Manual / CLI</div>
+        <div class="card-desc">Run kdrift directly from any shell. Full control over detection, migration, and validation stages.</div>
+        <div class="card-tag">Universal</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── § 06 — MONITORING ───────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="sh-label">06 — Monitoring</div>
+      <div>
+        <div class="sh-title">linux-next Tracking</div>
+        <div class="sh-sub">Proactive drift detection against linux-next. kdrift scans upstream daily, detects API changes that affect your drivers before they land in a stable release.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:0">
+    <div class="hero-term">
+      <div class="term-topbar">
+        <span class="tdot td1"></span>
+        <span class="tdot td2"></span>
+        <span class="tdot td3"></span>
+      </div>
+      <div class="term-body">
+        <div class="tl"><span class="t-p">$</span><span class="t-c">kdrift watch <span class="t-flag">--drivers</span> <span class="t-path">drivers/net/e1000e/</span> <span class="t-flag">--upstream</span> linux-next</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-ok">&nbsp; ● Watching</span><span class="t-dim"> linux-next for changes affecting e1000e...</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-dim">&nbsp; [2026-03-14 06:00] Scan complete</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp; </span><span class="t-ok">▲ ALERT</span><span class="t-dim"> netdev_priv() return type change in next-20260313</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; commit: </span><span class="t-path">a3f7c2e</span><span class="t-dim"> — "net: make netdev_priv return void pointer"</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; class:  </span><span class="t-c">02 (Return Type Change)</span><span class="t-dim"> → LPA candidate</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eta:    </span><span class="t-c">~3 weeks to stable</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp; </span><span class="t-ok">▲ ALERT</span><span class="t-dim"> pci_alloc_irq_vectors() new flags parameter</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; commit: </span><span class="t-path">d91be4a</span><span class="t-dim"> — "PCI/MSI: add flags argument to alloc_irq_vectors"</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; class:  </span><span class="t-c">01 (Signature Change)</span><span class="t-dim"> → LPA candidate</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eta:    </span><span class="t-c">~2 weeks to stable</span></div>
+        <div class="tl"><span class="t-dim">&nbsp;</span></div>
+        <div class="tl"><span class="t-ok">&nbsp; ✓ 2 upcoming changes detected</span><span class="t-dim"> — patches pre-staged</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:32px;padding-bottom:40px">
+    <div class="metrics-grid cols-3">
+      <div class="metric">
+        <div class="metric-n green">Daily</div>
+        <div class="metric-l">Scan frequency</div>
+        <div class="metric-note">Automated scans against linux-next HEAD</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green">2-4 wk</div>
+        <div class="metric-l">Advance warning</div>
+        <div class="metric-note">Lead time before changes hit stable</div>
+      </div>
+      <div class="metric">
+        <div class="metric-n green">Zero-day</div>
+        <div class="metric-l">Migration readiness</div>
+        <div class="metric-note">Patches ready before upstream lands</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ──────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-inner">
+    <div class="section-head" style="border-bottom:none;padding-bottom:48px">
+      <div class="sh-label">Get started</div>
+      <div>
+        <div class="sh-title">Ready to automate your kernel migrations?</div>
+        <div class="sh-sub" style="margin-bottom:28px">Start with a single driver. kdrift handles the rest.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="https://github.com/kdrift-dev" class="btn-green">View on GitHub</a>
+          <a href="/contact.html" class="btn-outline">Talk to us</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .page -->
+</body>
+</html>
