@@ -1,6 +1,7 @@
 import './styles/global.css';
 import { renderNav, renderBanner } from './components/nav.js';
 import { renderFooter } from './components/footer.js';
+import { initAnalytics } from './analytics.js';
 
 // inject shared layout
 const page = document.body.dataset.page || '';
@@ -9,6 +10,7 @@ const showBanner = document.body.dataset.banner !== 'false';
 renderNav(page);
 if (showBanner) renderBanner();
 renderFooter();
+initAnalytics();
 
 // animate metric numbers on scroll
 function animateCounters() {
